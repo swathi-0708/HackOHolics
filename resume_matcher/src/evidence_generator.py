@@ -32,6 +32,10 @@ class CandidateEvidence:
     min_years_required: int | None
     meets_experience_bar: bool | None
     sample_bullets: list[str] = field(default_factory=list)
+    # Requirements satisfied via an implied/related skill rather than an
+    # exact keyword hit, e.g. "Node.js" satisfied by "Express" on the resume.
+    # Each entry: "requirement (via matched_skill, relation)".
+    partial_credit_notes: list[str] = field(default_factory=list)
     prestige_neutral_overall_score: float | None = None
     rank: int = 0
 
@@ -57,6 +61,11 @@ def build_evidence(
     ]
     sample_bullets = (relevant_bullets or resume.experience_bullets)[:max_sample_bullets]
 
+    partial_credit_notes = [
+        f"{m.requirement} (via {m.matched_skill}, {m.relation})"
+        for m in keyword_result.partial_credit_matches
+    ]
+
     return CandidateEvidence(
         filename=resume.filename,
         candidate_name=resume.candidate_name,
@@ -66,6 +75,7 @@ def build_evidence(
         matched_preferred=keyword_result.matched_preferred,
         missing_required=keyword_result.missing_required,
         missing_preferred=keyword_result.missing_preferred,
+        partial_credit_notes=partial_credit_notes,
         years_of_experience=resume.years_of_experience,
         min_years_required=jd.min_years_experience,
         meets_experience_bar=meets_experience_bar,

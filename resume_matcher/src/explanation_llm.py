@@ -40,6 +40,11 @@ def _evidence_to_prompt(evidence: CandidateEvidence) -> str:
         f"Missing required skills: {', '.join(evidence.missing_required) or 'none'}",
         f"Missing preferred skills: {', '.join(evidence.missing_preferred) or 'none'}",
     ]
+    if evidence.partial_credit_notes:
+        lines.append(
+            "Partial-credit matches (skill implied/related, not an exact keyword hit): "
+            + "; ".join(evidence.partial_credit_notes)
+        )
     if evidence.years_of_experience is not None:
         lines.append(f"Estimated years of experience: {evidence.years_of_experience}")
     if evidence.min_years_required is not None:
@@ -68,6 +73,11 @@ def _template_explanation(evidence: CandidateEvidence) -> str:
         )
     else:
         parts.append("They do not show any of the role's explicitly required skills in their resume.")
+
+    if evidence.partial_credit_notes:
+        parts.append(
+            f"Some requirements are covered indirectly: {'; '.join(evidence.partial_credit_notes[:3])}."
+        )
 
     if evidence.missing_required:
         parts.append(f"Notably missing: {', '.join(evidence.missing_required[:4])}.")

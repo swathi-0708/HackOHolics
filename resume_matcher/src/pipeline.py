@@ -78,7 +78,7 @@ def run_pipeline(
     # 4-6. Keyword match + fusion + evidence, per candidate
     evidences: list[CandidateEvidence] = []
     for resume in resumes:
-        keyword_result = compute_keyword_match(jd, resume)
+        keyword_result = compute_keyword_match(jd, resume, taxonomy)
         semantic_result = semantic_results[resume.filename]
         semantic_result_neutral = semantic_results_neutral[resume.filename]
 
