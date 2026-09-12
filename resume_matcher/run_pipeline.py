@@ -74,13 +74,6 @@ def main():
     print(f"\nWrote: {json_path}")
     print(f"Wrote: {html_path}")
 
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print(
-            "\nNote: ANTHROPIC_API_KEY not set — explanations were generated with the "
-            "deterministic template fallback, not the LLM. Set the env var to enable "
-            "LLM-written explanations (see README.md)."
-        )
-
 
 if __name__ == "__main__":
     main()

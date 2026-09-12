@@ -43,8 +43,7 @@ _PRESTIGE_TOKENS = [
     "princeton", "yale", "oxford", "cambridge", "caltech", "berkeley",
     "carnegie mellon", "columbia university", "cornell", "wharton",
     "google", "meta", "facebook", "amazon", "apple", "microsoft", "netflix",
-    "goldman sachs", "mckinsey", "bain & company", "boston consulting group",
-    "openai", "anthropic",
+    "uber", "salesforce", "oracle", "goldman sachs", "mckinsey", "bain & company", "boston consulting group",
 ]
 _PRESTIGE_PATTERN = re.compile(
     r"(?<![a-z0-9])(" + "|".join(re.escape(t) for t in _PRESTIGE_TOKENS) + r")(?![a-z0-9])",
