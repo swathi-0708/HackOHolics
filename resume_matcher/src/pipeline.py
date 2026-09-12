@@ -45,7 +45,13 @@ from .skill_taxonomy import SkillTaxonomy
 from .jd_parser import parse_jd, ParsedJD
 from .resume_parser import parse_resume
 from .keyword_engine import compute_keyword_match
-from .semantic_engine import get_default_semantic_engine
+from .semantic_engine import (
+    get_default_semantic_engine,
+    SemanticEngine,
+    SentenceTransformerEngine,
+    TfidfSemanticEngine,
+    EmbeddingSemanticEngine,
+)
 from .score_fusion import fuse_scores, DEFAULT_KEYWORD_WEIGHT, DEFAULT_SEMANTIC_WEIGHT
 from .evidence_generator import build_evidence, rank_candidates, CandidateEvidence
 from .explanation_llm import generate_explanation
@@ -57,6 +63,7 @@ def run_pipeline(
     top_n: int = 3,
     keyword_weight: float = DEFAULT_KEYWORD_WEIGHT,
     semantic_weight: float = DEFAULT_SEMANTIC_WEIGHT,
+    semantic_engine: SemanticEngine | None = None,
 ) -> dict:
     taxonomy = SkillTaxonomy()
 
@@ -70,8 +77,9 @@ def run_pipeline(
 
     resumes = [parse_resume(doc.filename, doc.text, taxonomy) for doc in resume_docs]
 
-    # 3. Semantic engine needs the whole candidate set at once (TF-IDF corpus)
-    semantic_engine = get_default_semantic_engine()
+    # 3. Semantic engine computes similarity between JD and candidate resumes
+    if semantic_engine is None:
+        semantic_engine = get_default_semantic_engine()
     semantic_results = semantic_engine.score_all(jd, resumes, prestige_neutral=False)
     semantic_results_neutral = semantic_engine.score_all(jd, resumes, prestige_neutral=True)
 

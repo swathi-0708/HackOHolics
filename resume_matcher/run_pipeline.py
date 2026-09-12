@@ -20,6 +20,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from src.pipeline import run_pipeline, save_results
+from src.semantic_engine import SentenceTransformerEngine, TfidfSemanticEngine
 from src.ui_generator import generate_html_report
 from src.pdf_parser import PDFParsingError
 
@@ -32,7 +33,19 @@ def main():
     parser.add_argument("--top-n", type=int, default=3, help="How many top candidates get LLM explanations")
     parser.add_argument("--keyword-weight", type=float, default=0.65, help="Weight for keyword score in fusion")
     parser.add_argument("--semantic-weight", type=float, default=0.35, help="Weight for semantic score in fusion")
+    parser.add_argument(
+        "--semantic-engine",
+        choices=["sentence-transformer", "tfidf"],
+        default="sentence-transformer",
+        help="Semantic engine to use (default: sentence-transformer)",
+    )
     args = parser.parse_args()
+
+    engine = (
+        SentenceTransformerEngine()
+        if args.semantic_engine == "sentence-transformer"
+        else TfidfSemanticEngine()
+    )
 
     try:
         results = run_pipeline(
@@ -41,6 +54,7 @@ def main():
             top_n=args.top_n,
             keyword_weight=args.keyword_weight,
             semantic_weight=args.semantic_weight,
+            semantic_engine=engine,
         )
     except PDFParsingError as e:
         print(f"Error: {e}")
