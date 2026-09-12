@@ -28,7 +28,7 @@ Orchestrates the full resume-screening pipeline:
                  v
                Top 3
                  v
-        Explanation LLM
+        Explanation Engine
                  v
                 UI
 
@@ -54,7 +54,7 @@ from .semantic_engine import (
 )
 from .score_fusion import fuse_scores, DEFAULT_KEYWORD_WEIGHT, DEFAULT_SEMANTIC_WEIGHT
 from .evidence_generator import build_evidence, rank_candidates, CandidateEvidence
-from .explanation_llm import generate_explanation
+from .explanation_generator import generate_explanation
 
 
 def run_pipeline(

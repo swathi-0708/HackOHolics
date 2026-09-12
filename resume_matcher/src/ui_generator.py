@@ -2,7 +2,7 @@
 ui_generator.py
 -----------------
 Renders the pipeline's results dict into a single self-contained HTML file:
-ranked candidate list, expandable evidence per candidate, LLM explanations
+ranked candidate list, expandable evidence per candidate, evidence-based explanations
 for the top N, and a client-side "prestige-neutral scoring" toggle (the
 Score Fusion module already computed both versions, so the toggle just
 re-sorts/re-displays using data already embedded in the page — no server

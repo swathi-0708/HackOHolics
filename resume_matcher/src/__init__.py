@@ -17,7 +17,7 @@ from .semantic_engine import (
 from .keyword_engine import compute_keyword_match, KeywordMatchResult
 from .score_fusion import fuse_scores, FusedScore
 from .evidence_generator import build_evidence, rank_candidates, CandidateEvidence
-from .explanation_llm import generate_explanation
+from .explanation_generator import generate_explanation
 from .jd_parser import parse_jd, ParsedJD
 from .resume_parser import parse_resume, ParsedResume
 from .skill_taxonomy import SkillTaxonomy

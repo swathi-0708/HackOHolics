@@ -64,7 +64,7 @@ python run_pipeline.py --jd path/to/job_description.pdf --resumes path/to/resume
 
 - `--jd` accepts a single `.pdf` (or `.txt`, useful for testing without a real PDF)
 - `--resumes` accepts a directory of `.pdf`/`.txt` files (15–18+ resumes is fine)
-- `--top-n` controls how many candidates get natural language explanations (default 3)
+- `--top-n` controls how many candidates get evidence-based explanations (default 3)
 - `--keyword-weight` / `--semantic-weight` control the Score Fusion blend (default 0.65 / 0.35)
 - `--semantic-engine` engine choice: `sentence-transformer` (default) or `tfidf`
 

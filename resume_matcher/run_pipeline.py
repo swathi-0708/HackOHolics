@@ -30,7 +30,7 @@ def main():
     parser.add_argument("--jd", required=True, help="Path to the JD PDF (or .txt) file")
     parser.add_argument("--resumes", required=True, help="Path to a directory of resume PDFs (or .txt)")
     parser.add_argument("--out", default="output", help="Output directory (default: output/)")
-    parser.add_argument("--top-n", type=int, default=3, help="How many top candidates get LLM explanations")
+    parser.add_argument("--top-n", type=int, default=3, help="How many top candidates get evidence-based explanations")
     parser.add_argument("--keyword-weight", type=float, default=0.65, help="Weight for keyword score in fusion")
     parser.add_argument("--semantic-weight", type=float, default=0.35, help="Weight for semantic score in fusion")
     parser.add_argument(
