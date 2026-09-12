@@ -178,6 +178,16 @@ def test_empty_and_whitespace_inputs(engine: SentenceTransformerEngine):
     assert engine.score_requirements([], {"skills": "Python"}) == {}
 
 
+def test_strip_prestige_signals():
+    """Verify prestige tokens are correctly identified and stripped from text."""
+    text = "Graduated from Harvard and Stanford, worked at Google and Meta."
+    cleaned = strip_prestige_signals(text)
+    for token in ["Harvard", "Stanford", "Google", "Meta"]:
+        assert token not in cleaned
+    assert "Graduated from" in cleaned
+    assert "worked at" in cleaned
+
+
 def test_tfidf_engine():
     """Verify TfidfSemanticEngine functionality and score_requirements."""
     tfidf = TfidfSemanticEngine()
