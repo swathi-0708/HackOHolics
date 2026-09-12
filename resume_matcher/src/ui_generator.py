@@ -66,6 +66,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   .score { font-size: 24px; font-weight: 700; }
   .score.good { color: var(--good); } .score.mid { color: var(--mid); } .score.bad { color: var(--bad); }
   .score-sub { font-size: 12px; color: var(--muted); text-align: right; }
+  .penalty-note { color: var(--bad); font-size: 11px; margin-top: 3px; text-align: right; }
   .skills { margin-top: 10px; font-size: 13px; }
   .pill {
     display: inline-block; padding: 2px 9px; border-radius: 14px; margin: 3px 4px 0 0;
@@ -135,6 +136,10 @@ function renderAll() {
       expLine = `<div class="exp-line">Est. experience: ~${c.years_of_experience} yrs${bar}</div>`;
     }
     const bullets = (c.sample_bullets || []).map(b => `<li>${b}</li>`).join("");
+    const penalty = c.fused_score.missing_required_penalty || 0;
+    const penaltyNote = penalty > 0
+      ? `<div class="penalty-note">&minus;${Math.round(penalty * 100)}% required-skill penalty (${c.fused_score.missing_required_count} missing)</div>`
+      : "";
     return `
       <div class="card ${isTop ? 'top3' : ''}">
         <div class="row">
@@ -146,6 +151,7 @@ function renderAll() {
           <div>
             <div class="score ${scoreClass(displayScore)}">${displayScore.toFixed(1)}</div>
             <div class="score-sub">keyword ${c.fused_score.keyword_score} · semantic ${c.fused_score.semantic_score}</div>
+            ${penaltyNote}
           </div>
         </div>
         ${expLine}

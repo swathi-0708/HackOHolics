@@ -1,0 +1,785 @@
+diff --git a/resume_matcher/data/skill_taxonomy.json b/resume_matcher/data/skill_taxonomy.json
+index 3bcd02c..42b96c4 100644
+--- a/resume_matcher/data/skill_taxonomy.json
++++ b/resume_matcher/data/skill_taxonomy.json
+@@ -44,14 +44,26 @@
+     ],
+     "category": "frontend",
+     "implies": [
+-      "typescript",
+-      "javascript"
++      "javascript",
++      "typescript"
+     ],
+     "related": [
+       "react",
+       "vue"
+     ]
+   },
++  "ansible": {
++    "aliases": [
++      "ansible playbook",
++      "configuration management"
++    ],
++    "category": "devops",
++    "implies": [],
++    "related": [
++      "pulumi",
++      "terraform"
++    ]
++  },
+   "authentication": {
+     "aliases": [
+       "auth flow",
+@@ -77,7 +89,9 @@
+       "ec2",
+       "elastic beanstalk",
+       "lambda",
+-      "s3"
++      "s3",
++      "sns",
++      "sqs"
+     ],
+     "category": "cloud",
+     "implies": [
+@@ -101,8 +115,6 @@
+   "backend development": {
+     "aliases": [
+       "backend",
+-      "microservice",
+-      "microservices",
+       "server development",
+       "server side",
+       "server side development"
+@@ -356,13 +368,13 @@
+     ],
+     "category": "backend",
+     "implies": [
++      "backend development",
+       "python",
+-      "rest api",
+-      "backend development"
++      "rest api"
+     ],
+     "related": [
+-      "flask",
+-      "fastapi"
++      "fastapi",
++      "flask"
+     ]
+   },
+   "docker": {
+@@ -384,8 +396,8 @@
+     ],
+     "category": "backend",
+     "implies": [
+-      "csharp",
+-      "backend development"
++      "backend development",
++      "csharp"
+     ],
+     "related": []
+   },
+@@ -418,7 +430,6 @@
+       "data pipeline",
+       "data warehouse",
+       "hadoop",
+-      "kafka",
+       "spark"
+     ],
+     "category": "data",
+@@ -445,28 +456,28 @@
+     ],
+     "category": "backend",
+     "implies": [
+-      "nodejs",
++      "backend development",
+       "javascript",
+-      "rest api",
+-      "backend development"
++      "nodejs",
++      "rest api"
+     ],
+     "related": [
+-      "nestjs",
+       "fastify",
+-      "koa"
++      "koa",
++      "nestjs"
+     ]
+   },
+   "fastapi": {
+     "aliases": [],
+     "category": "backend",
+     "implies": [
++      "backend development",
+       "python",
+-      "rest api",
+-      "backend development"
++      "rest api"
+     ],
+     "related": [
+-      "flask",
+-      "django"
++      "django",
++      "flask"
+     ]
+   },
+   "fastify": {
+@@ -509,9 +520,9 @@
+     "aliases": [],
+     "category": "backend",
+     "implies": [
++      "backend development",
+       "python",
+-      "rest api",
+-      "backend development"
++      "rest api"
+     ],
+     "related": [
+       "django",
+@@ -679,8 +690,8 @@
+     ],
+     "category": "quality",
+     "implies": [
+-      "testing",
+-      "javascript"
++      "javascript",
++      "testing"
+     ],
+     "related": []
+   },
+@@ -710,11 +721,27 @@
+     ],
+     "category": "quality",
+     "implies": [
+-      "testing",
+-      "java"
++      "java",
++      "testing"
+     ],
+     "related": []
+   },
++  "kafka": {
++    "aliases": [
++      "apache kafka",
++      "event streaming",
++      "kafka streams",
++      "message broker",
++      "message queue",
++      "streaming pipeline"
++    ],
++    "category": "messaging",
++    "implies": [],
++    "related": [
++      "etl",
++      "rabbitmq"
++    ]
++  },
+   "kotlin": {
+     "aliases": [],
+     "category": "language",
+@@ -740,8 +767,8 @@
+     ],
+     "category": "backend",
+     "implies": [
+-      "php",
+-      "backend development"
++      "backend development",
++      "php"
+     ],
+     "related": []
+   },
+@@ -826,6 +853,20 @@
+     "implies": [],
+     "related": []
+   },
++  "microservices": {
++    "aliases": [
++      "microservice",
++      "microservice architecture",
++      "microservices architecture",
++      "service oriented architecture",
++      "soa"
++    ],
++    "category": "architecture",
++    "implies": [
++      "backend development"
++    ],
++    "related": []
++  },
+   "mongodb": {
+     "aliases": [
+       "document database",
+@@ -837,8 +878,8 @@
+     "category": "database",
+     "implies": [],
+     "related": [
+-      "postgresql",
+-      "firebase"
++      "firebase",
++      "postgresql"
+     ]
+   },
+   "mongoose": {
+@@ -852,6 +893,19 @@
+     ],
+     "related": []
+   },
++  "monitoring": {
++    "aliases": [
++      "application monitoring",
++      "datadog",
++      "grafana",
++      "new relic",
++      "observability",
++      "prometheus"
++    ],
++    "category": "devops",
++    "implies": [],
++    "related": []
++  },
+   "mysql": {
+     "aliases": [
+       "mariadb"
+@@ -867,8 +921,8 @@
+     "category": "backend",
+     "implies": [
+       "nodejs",
+-      "typescript",
+-      "rest api"
++      "rest api",
++      "typescript"
+     ],
+     "related": []
+   },
+@@ -888,9 +942,9 @@
+     "aliases": [],
+     "category": "frontend",
+     "implies": [
+-      "react",
+       "javascript",
+       "nodejs",
++      "react",
+       "server side rendering"
+     ],
+     "related": []
+@@ -927,12 +981,12 @@
+     ],
+     "category": "backend",
+     "implies": [
+-      "javascript",
+-      "backend development"
++      "backend development",
++      "javascript"
+     ],
+     "related": [
+-      "deno",
+-      "bun"
++      "bun",
++      "deno"
+     ]
+   },
+   "npm": {
+@@ -1048,19 +1102,28 @@
+     ],
+     "category": "database",
+     "implies": [
+-      "sql",
+-      "nodejs"
++      "nodejs",
++      "sql"
+     ],
+     "related": []
+   },
++  "pulumi": {
++    "aliases": [],
++    "category": "devops",
++    "implies": [],
++    "related": [
++      "ansible",
++      "terraform"
++    ]
++  },
+   "pytest": {
+     "aliases": [
+       "unittest"
+     ],
+     "category": "quality",
+     "implies": [
+-      "testing",
+-      "python"
++      "python",
++      "testing"
+     ],
+     "related": []
+   },
+@@ -1082,14 +1145,24 @@
+     "implies": [],
+     "related": []
+   },
++  "rabbitmq": {
++    "aliases": [
++      "amqp"
++    ],
++    "category": "messaging",
++    "implies": [],
++    "related": [
++      "kafka"
++    ]
++  },
+   "rails": {
+     "aliases": [
+       "ruby on rails"
+     ],
+     "category": "backend",
+     "implies": [
+-      "ruby",
+-      "backend development"
++      "backend development",
++      "ruby"
+     ],
+     "related": []
+   },
+@@ -1104,9 +1177,9 @@
+       "javascript"
+     ],
+     "related": [
+-      "vue",
+       "angular",
+-      "svelte"
++      "svelte",
++      "vue"
+     ]
+   },
+   "redis": {
+@@ -1127,8 +1200,8 @@
+     ],
+     "category": "frontend",
+     "implies": [
+-      "react",
+-      "javascript"
++      "javascript",
++      "react"
+     ],
+     "related": []
+   },
+@@ -1230,9 +1303,9 @@
+     ],
+     "category": "backend",
+     "implies": [
++      "backend development",
+       "java",
+-      "rest api",
+-      "backend development"
++      "rest api"
+     ],
+     "related": []
+   },
+@@ -1340,10 +1413,8 @@
+   },
+   "terraform": {
+     "aliases": [
+-      "ansible",
+       "iac",
+-      "infrastructure as code",
+-      "pulumi"
++      "infrastructure as code"
+     ],
+     "category": "devops",
+     "implies": [],
+@@ -1388,8 +1459,8 @@
+       "javascript"
+     ],
+     "related": [
+-      "react",
+-      "angular"
++      "angular",
++      "react"
+     ]
+   },
+   "webpack": {
+@@ -1416,4 +1487,4 @@
+     "implies": [],
+     "related": []
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/resume_matcher/src/score_fusion.py b/resume_matcher/src/score_fusion.py
+index cfbd06f..04ebd38 100644
+--- a/resume_matcher/src/score_fusion.py
++++ b/resume_matcher/src/score_fusion.py
+@@ -12,6 +12,23 @@ ties among candidates with similar keyword coverage.
+ 
+ These weights are a configurable starting point, not a tuned constant —
+ see README.md for guidance on adjusting them per role type.
++
++Missing-required penalty
++-------------------------
++The weighted blend above is not, by itself, enough to make a fully-missing
++"must have" requirement clearly hurt: required-skill weight (1.0-1.5) already
++outweighs preferred-skill weight (0.5) inside the Keyword Engine's own
++score, but that gap gets diluted the more total requirements a JD has, and
++the semantic half of the blend doesn't know about tiers at all. Measured
++against the bundled sample JD (9 required / 5 preferred requirements),
++missing one ordinary required skill with everything else perfect only cost
++~5 points out of 100 on the old pure blend - not enough to reliably outrank
++a candidate who has every required skill but a slightly weaker semantic
++match. A requirement with genuinely zero evidence (present in
++`missing_required`, as opposed to one satisfied at IMPLIED_CREDIT/
++RELATED_CREDIT) now takes an extra, explicit multiplicative penalty on top
++of the blend, capped so a JD with many required skills doesn't zero out a
++candidate for one gap.
+ """
+ 
+ from __future__ import annotations
+@@ -23,6 +40,14 @@ from .semantic_engine import SemanticMatchResult
+ DEFAULT_KEYWORD_WEIGHT = 0.65
+ DEFAULT_SEMANTIC_WEIGHT = 0.35
+ 
++# Multiplicative penalty applied on top of the blended score for each
++# required requirement with NO evidence at all (not even implied/related).
++# 8% per missing required skill, capped at 40% total - enough that missing
++# a hard requirement clearly separates a candidate from one who has it,
++# without letting a JD with a long required list zero a candidate out.
++REQUIRED_SKILL_MISS_PENALTY = 0.08
++MAX_REQUIRED_MISS_PENALTY = 0.40
++
+ 
+ @dataclass
+ class FusedScore:
+@@ -31,6 +56,8 @@ class FusedScore:
+     semantic_score: float  # 0-100
+     keyword_weight: float
+     semantic_weight: float
++    missing_required_count: int = 0
++    missing_required_penalty: float = 0.0  # fraction knocked off, 0.0-MAX_REQUIRED_MISS_PENALTY
+ 
+ 
+ def fuse_scores(
+@@ -46,7 +73,11 @@ def fuse_scores(
+ 
+     keyword_pct = keyword_result.score * 100
+     semantic_pct = semantic_result.score * 100
+-    overall = keyword_weight * keyword_pct + semantic_weight * semantic_pct
++    blended = keyword_weight * keyword_pct + semantic_weight * semantic_pct
++
++    missing_required_count = len(keyword_result.missing_required)
++    penalty = min(MAX_REQUIRED_MISS_PENALTY, REQUIRED_SKILL_MISS_PENALTY * missing_required_count)
++    overall = blended * (1 - penalty)
+ 
+     return FusedScore(
+         overall_score=round(overall, 1),
+@@ -54,4 +85,6 @@ def fuse_scores(
+         semantic_score=round(semantic_pct, 1),
+         keyword_weight=round(keyword_weight, 2),
+         semantic_weight=round(semantic_weight, 2),
++        missing_required_count=missing_required_count,
++        missing_required_penalty=round(penalty, 4),
+     )
+diff --git a/resume_matcher/src/skill_taxonomy.py b/resume_matcher/src/skill_taxonomy.py
+index a1cbf21..fa5eadf 100644
+--- a/resume_matcher/src/skill_taxonomy.py
++++ b/resume_matcher/src/skill_taxonomy.py
+@@ -48,6 +48,19 @@ EXACT_CREDIT = 1.0
+ IMPLIED_CREDIT = 0.75
+ RELATED_CREDIT = 0.45
+ 
++# Fuzzy-token matching for near-miss spellings ("Kuberentes", "Dockerr").
++# Applied only to short, list-style tokens (split on commas/bullets/lines) -
++# never to the whole free-text blob - since fuzzy-matching an entire
++# sentence against a short alias produces nonsense matches. A single typo'd
++# edit on a 4+ letter word almost always lands >= FUZZY_TOKEN_MIN_RATIO;
++# distinct-but-similar-length skill names in the taxonomy (java/javascript,
++# sql/"sql server", go/gcp, ...) all fall well below it.
++FUZZY_TOKEN_MIN_RATIO = 0.87
++_FUZZY_TOKEN_MIN_LEN = 4
++_FUZZY_TOKEN_MAX_LEN = 30
++_FUZZY_TOKEN_MAX_LEN_DIFF = 3
++_SKILL_LIST_SPLIT = re.compile(r"[,;\n|•·]+")
++
+ 
+ def _load_taxonomy(path: str = _TAXONOMY_PATH) -> dict:
+     with open(path, "r", encoding="utf-8") as f:
+@@ -115,12 +128,37 @@ class SkillTaxonomy:
+             return self.alias_to_canonical[best_match]
+         return None
+ 
++    def _fuzzy_canonical_for_token(self, token_normalized: str) -> str | None:
++        """Near-miss spelling lookup for a single short list-style token."""
++        if not token_normalized:
++            return None
++        if token_normalized in self.alias_to_canonical:
++            return self.alias_to_canonical[token_normalized]
++        if not (_FUZZY_TOKEN_MIN_LEN <= len(token_normalized) <= _FUZZY_TOKEN_MAX_LEN):
++            return None
++
++        best_match, best_ratio = None, 0.0
++        for alias in self.alias_to_canonical:
++            if abs(len(alias) - len(token_normalized)) > _FUZZY_TOKEN_MAX_LEN_DIFF:
++                continue
++            ratio = SequenceMatcher(None, token_normalized, alias).ratio()
++            if ratio > best_ratio:
++                best_match, best_ratio = alias, ratio
++        if best_ratio >= FUZZY_TOKEN_MIN_RATIO:
++            return self.alias_to_canonical[best_match]
++        return None
++
+     def find_skills_in_text(self, text: str) -> set[str]:
+         """
+         Scan free text and return the set of canonical skills mentioned,
+         using word-boundary matching against every known alias. Text is
+         normalized first so punctuation variants (Node.js / nodejs / node js)
+         all resolve the same way.
++
++        Also runs a fuzzy near-miss pass over comma/bullet/line-separated
++        tokens (the shape a resume's "Skills:" line actually takes), so a
++        typo'd spelling ("Kuberentes", "Dockerr") is still counted as
++        evidence instead of silently vanishing.
+         """
+         normalized = normalize_text(text)
+         found = set()
+@@ -131,6 +169,13 @@ class SkillTaxonomy:
+             pattern = r"(?<![a-z0-9])" + alias_normalized.replace(" ", r"\s+") + r"(?![a-z0-9])"
+             if re.search(pattern, normalized):
+                 found.add(self.alias_to_canonical[alias])
++
++        for raw_token in _SKILL_LIST_SPLIT.split(text):
++            token_normalized = normalize_text(raw_token)
++            canonical = self._fuzzy_canonical_for_token(token_normalized)
++            if canonical:
++                found.add(canonical)
++
+         return found
+ 
+     def all_canonical_skills(self) -> list[str]:
+diff --git a/resume_matcher/src/ui_generator.py b/resume_matcher/src/ui_generator.py
+index 9f46165..ca13b40 100644
+--- a/resume_matcher/src/ui_generator.py
++++ b/resume_matcher/src/ui_generator.py
+@@ -66,6 +66,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
+   .score { font-size: 24px; font-weight: 700; }
+   .score.good { color: var(--good); } .score.mid { color: var(--mid); } .score.bad { color: var(--bad); }
+   .score-sub { font-size: 12px; color: var(--muted); text-align: right; }
++  .penalty-note { color: var(--bad); font-size: 11px; margin-top: 3px; text-align: right; }
+   .skills { margin-top: 10px; font-size: 13px; }
+   .pill {
+     display: inline-block; padding: 2px 9px; border-radius: 14px; margin: 3px 4px 0 0;
+@@ -135,6 +136,10 @@ function renderAll() {
+       expLine = `<div class="exp-line">Est. experience: ~${c.years_of_experience} yrs${bar}</div>`;
+     }
+     const bullets = (c.sample_bullets || []).map(b => `<li>${b}</li>`).join("");
++    const penalty = c.fused_score.missing_required_penalty || 0;
++    const penaltyNote = penalty > 0
++      ? `<div class="penalty-note">&minus;${Math.round(penalty * 100)}% required-skill penalty (${c.fused_score.missing_required_count} missing)</div>`
++      : "";
+     return `
+       <div class="card ${isTop ? 'top3' : ''}">
+         <div class="row">
+@@ -146,6 +151,7 @@ function renderAll() {
+           <div>
+             <div class="score ${scoreClass(displayScore)}">${displayScore.toFixed(1)}</div>
+             <div class="score-sub">keyword ${c.fused_score.keyword_score} · semantic ${c.fused_score.semantic_score}</div>
++            ${penaltyNote}
+           </div>
+         </div>
+         ${expLine}
+diff --git a/resume_matcher/tests/test_taxonomy_and_scoring.py b/resume_matcher/tests/test_taxonomy_and_scoring.py
+new file mode 100644
+index 0000000..5bbc8cf
+--- /dev/null
++++ b/resume_matcher/tests/test_taxonomy_and_scoring.py
+@@ -0,0 +1,192 @@
++"""
++test_taxonomy_and_scoring.py
++------------------------------
++Covers the three scenarios called out for the taxonomy/keyword-engine
++tuning pass, plus a direct re-verification of the Score Fusion penalty:
++
++  1. A resume with a typo'd skill spelling should still get credit.
++  2. A resume using an abbreviation (vs the JD's full form, or vice versa)
++     should still get exact credit.
++  3. A resume genuinely missing a required skill should show up as missing
++     - and should be penalized more than a genuinely missing preferred
++       skill, by more than just the raw weight ratio would suggest.
++
++Run with: python3 -m pytest tests/ -v   (from resume_matcher/)
++"""
++
++from __future__ import annotations
++import sys
++import os
++
++sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
++
++from src.skill_taxonomy import SkillTaxonomy
++from src.jd_parser import parse_jd
++from src.resume_parser import parse_resume
++from src.keyword_engine import compute_keyword_match
++from src.score_fusion import fuse_scores
++from src.semantic_engine import SemanticMatchResult
++
++
++SAMPLE_JD_TEXT = """Senior Backend Engineer
++
++Requirements:
++- Python
++- Docker
++- Kubernetes
++- PostgreSQL
++
++Preferred:
++- Terraform
++- Machine Learning
++"""
++
++
++def _make_jd():
++    tax = SkillTaxonomy()
++    jd = parse_jd(SAMPLE_JD_TEXT, tax)
++    return tax, jd
++
++
++# ---------------------------------------------------------------------------
++# 1. Typo'd skill spelling
++# ---------------------------------------------------------------------------
++
++def test_typo_skill_still_credited():
++    tax, jd = _make_jd()
++    resume_text = "Skills:\nPython, Dockerr, Kuberentes, PostgreSQL\n"
++    resume = parse_resume("typo_resume.txt", resume_text, tax)
++
++    # The typo'd spellings should still resolve to their canonical skills.
++    assert "docker" in resume.skills
++    assert "kubernetes" in resume.skills
++
++    result = compute_keyword_match(jd, resume, tax)
++    assert result.missing_required == []
++    assert set(result.matched_required) == {"python", "docker", "kubernetes", "postgresql"}
++    # All 4 required requirements (weight 4.0 of the 5.0 total, since the
++    # JD's 2 preferred items aren't on this resume at all) are genuinely
++    # matched despite the typos, so score = 4.0 / 5.0.
++    assert result.score == 0.8
++
++
++def test_severe_typo_is_not_blindly_matched():
++    # A guardrail on the fuzzy pass itself: garbage shouldn't get credit.
++    tax, jd = _make_jd()
++    resume_text = "Skills:\nPython, Zzzzzzz, Something Else Entirely\n"
++    resume = parse_resume("garbage_resume.txt", resume_text, tax)
++    assert "docker" not in resume.skills
++    assert "kubernetes" not in resume.skills
++
++
++# ---------------------------------------------------------------------------
++# 2. Abbreviation vs full form (both directions)
++# ---------------------------------------------------------------------------
++
++def test_abbreviation_on_resume_matches_full_form_in_jd():
++    tax, jd = _make_jd()
++    # JD says "Machine Learning" (preferred) and "Kubernetes" (required);
++    # resume uses the short forms.
++    resume_text = "Skills:\nPython, Docker, K8s, PostgreSQL, ML\n"
++    resume = parse_resume("abbrev_resume.txt", resume_text, tax)
++
++    result = compute_keyword_match(jd, resume, tax)
++    assert "kubernetes" in result.matched_required
++    assert "machine learning" in result.matched_preferred
++    assert result.missing_required == []
++
++
++def test_full_form_on_resume_matches_abbreviation_style_jd():
++    tax = SkillTaxonomy()
++    jd_text = "Requirements:\n- JS\n- K8s\n"
++    jd = parse_jd(jd_text, tax)
++    resume_text = "Skills:\nJavaScript, Kubernetes\n"
++    resume = parse_resume("full_form_resume.txt", resume_text, tax)
++
++    result = compute_keyword_match(jd, resume, tax)
++    assert set(result.matched_required) == {"javascript", "kubernetes"}
++    assert result.score == 1.0
++
++
++# ---------------------------------------------------------------------------
++# 3. A required skill missing entirely
++# ---------------------------------------------------------------------------
++
++def test_missing_required_skill_flagged_and_not_partial_credited():
++    tax, jd = _make_jd()
++    # Everything except Kubernetes - and nothing implies/relates to it.
++    resume_text = "Skills:\nPython, Docker, PostgreSQL, Terraform, ML\n"
++    resume = parse_resume("missing_required.txt", resume_text, tax)
++
++    result = compute_keyword_match(jd, resume, tax)
++    assert result.missing_required == ["kubernetes"]
++    assert "kubernetes" not in result.matched_required
++    assert not any(m.requirement == "kubernetes" for m in result.partial_credit_matches)
++    assert 0.0 < result.score < 1.0
++
++
++# ---------------------------------------------------------------------------
++# Score Fusion re-verification: does missing a required skill actually
++# tank the score more than missing a preferred one?
++# ---------------------------------------------------------------------------
++
++def _fixed_semantic(score: float) -> SemanticMatchResult:
++    return SemanticMatchResult(score=score)
++
++
++def test_missing_required_penalized_more_than_missing_preferred():
++    tax, jd = _make_jd()
++    semantic = _fixed_semantic(0.70)  # hold semantic constant to isolate the keyword effect
++
++    perfect_resume = parse_resume(
++        "perfect.txt", "Skills:\nPython, Docker, Kubernetes, PostgreSQL, Terraform, ML\n", tax
++    )
++    missing_required_resume = parse_resume(
++        "missing_required.txt", "Skills:\nPython, Docker, PostgreSQL, Terraform, ML\n", tax
++    )
++    missing_preferred_resume = parse_resume(
++        "missing_preferred.txt", "Skills:\nPython, Docker, Kubernetes, PostgreSQL, ML\n", tax
++    )
++
++    baseline = fuse_scores(compute_keyword_match(jd, perfect_resume, tax), semantic)
++    missing_required = fuse_scores(compute_keyword_match(jd, missing_required_resume, tax), semantic)
++    missing_preferred = fuse_scores(compute_keyword_match(jd, missing_preferred_resume, tax), semantic)
++
++    required_drop = baseline.overall_score - missing_required.overall_score
++    preferred_drop = baseline.overall_score - missing_preferred.overall_score
++
++    assert missing_required.missing_required_count == 1
++    assert missing_preferred.missing_required_count == 0
++    assert missing_required.missing_required_penalty > 0.0
++    assert missing_preferred.missing_required_penalty == 0.0
++
++    # The required miss must cost noticeably more than the preferred miss -
++    # not just the ~2x you'd get from weight alone (1.0 vs 0.5), since the
++    # dedicated penalty stacks on top of the weighted blend.
++    assert required_drop > preferred_drop * 2.5
++
++    # And it should be a real, visible amount on a 0-100 scale, not a
++    # rounding-error dent.
++    assert required_drop >= 8.0
++
++
++def test_required_miss_penalty_caps_out():
++    tax = SkillTaxonomy()
++    # 6 required skills with no implication/relation chains between them or
++    # to the resume's (unrelated) skills, so all 6 are cleanly "missing" -
++    # enough to exceed the penalty cap (0.08 * 6 = 0.48 > 0.40).
++    jd_text = "Requirements:\n- Python\n- Docker\n- Kubernetes\n- PostgreSQL\n- AWS\n- React\n"
++    jd = parse_jd(jd_text, tax)
++    semantic = _fixed_semantic(0.70)
++    unrelated_resume = parse_resume("empty.txt", "Skills:\nFigma, Excel\n", tax)
++
++    result = fuse_scores(compute_keyword_match(jd, unrelated_resume, tax), semantic)
++    assert result.missing_required_count == 6
++
++    from src.score_fusion import MAX_REQUIRED_MISS_PENALTY
++    assert result.missing_required_penalty == MAX_REQUIRED_MISS_PENALTY
++
++
++if __name__ == "__main__":
++    import pytest
++    raise SystemExit(pytest.main([__file__, "-v"]))
