@@ -1,249 +1,1238 @@
 """Render an employer-friendly, interactive resume-shortlisting report.
 
 Two-page flow: an intake stage (job description + resumes) and a report
-stage (ranked list / comparison / role details), styled as a navy-and-gold
-Pantone-chip system. Brand mark is a single circle-and-tick logo (also used
-as the page favicon), with "Shortlist" as the large wordmark and the task
-description set smaller beneath it.
-
-Candidate dicts may optionally include:
-    prestige_signal_detected: bool
-        True when resume_matcher's semantic_engine.strip_prestige_signals()
-        found a well-known school/employer name-string in this candidate's
-        resume text. Purely informational for the UI's "notable school /
-        employer" tag — it must NOT be folded into fused_score. Ranking
-        should already come from scoring with prestige_neutral=True so the
-        rank order stays skills-based; this tag is a separate, non-scoring
-        display signal only.
+stage (ranked list / comparison / role details), styled with a refined
+Swan Wing cream, Royal Blue navy, sapphire, and Quicksand gold design system.
 """
 from __future__ import annotations
 import json
 
 HTML_TEMPLATE = r"""<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shortlist — {{JD_TITLE}}</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%23c9a869'/%3E%3Cpath d='M7 12.4l3.3 3.3L17.2 8.4' fill='none' stroke='%230f1b3c' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shortlistr — {{JD_TITLE}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&display=swap');</style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%23DCDDE1'/%3E%3Cpath d='M7 12.4l3.3 3.3L17.2 8.4' fill='none' stroke='%23E0C58F' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
-:root{
-  --navy:#0f1b3c;
-  --gold:#c9a869;
-  --gold-bright:#e4bd77;
-  --cream:#f4efe4;
-  --muted:#a6926b;
-  --line:rgba(201,168,105,.38);
-  --surface:rgba(244,239,228,.05);
-  --surface-2:rgba(244,239,228,.09);
-  --gold-surface:rgba(201,168,105,.13);
-  --gold-surface-2:rgba(201,168,105,.22);
-  --match:#9ad2a6;--match-bg:rgba(154,210,166,.14);
-  --missing:#e3a68f;--missing-bg:rgba(227,166,143,.14);
+:root {
+  --bg-cream: #0E1617;
+  --navy: #DCDDE1;
+  --sapphire: #7C7C77;
+  --sapphire-muted: rgba(124, 124, 119, 0.85);
+  --gold: #E0C58F;
+  --gold-hover: #d4b67b;
+  --burgundy: #ACAEB1;
+  --shellstone: #7C7C77;
+  --white-card: #454641;
+  --card-bg: #454641;
+  --match-green: #2e7d32;
+  --match-bg: rgba(46, 125, 50, 0.12);
+  --missing-red: #c62828;
+  --missing-bg: rgba(198, 40, 40, 0.12);
 }
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--navy);color:var(--cream);font:14px/1.5 "Segoe UI",Arial,sans-serif}
-.stage{display:none}
-.stage.active{display:block}
 
-/* ---------- Stage 1: intake ---------- */
-.landing.active{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:64px 24px;text-align:center}
-.hero-lockup{display:flex;align-items:center;gap:16px}
-.hero-logo{width:46px;height:46px;flex:none}
-.hero-logo-bg{fill:var(--gold)}
-.hero-logo-tick{stroke:var(--navy)}
-.hero-word{display:block;font:700 clamp(40px,7vw,68px)/1 Georgia,serif;color:var(--cream);letter-spacing:-.01em;text-align:left}
-.hero-caption{display:block;margin-top:5px;color:var(--muted);font-size:13px;text-align:left}
-.landing h1{margin:2px 0 0;max-width:480px;font:600 clamp(17px,2.1vw,21px)/1.4 "Segoe UI",Arial,sans-serif;color:var(--gold)}
-.landing .lede{margin:0;max-width:460px;color:var(--muted)}
-.intake-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;width:100%;max-width:600px}
-.intake-card{all:unset;cursor:pointer;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:transform .15s ease,border-color .15s ease}
-.intake-card:hover{transform:translateY(-2px);border-color:var(--gold)}
-.intake-card.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
-.swatch-top{height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--navy)}
-.intake-card.gold .swatch-top{background:var(--gold)}
-.swatch-icon{width:26px;height:26px}
-.swatch-icon path,.swatch-icon rect,.swatch-icon circle,.swatch-icon line{stroke:var(--gold)}
-.intake-card.gold .swatch-icon path,.intake-card.gold .swatch-icon rect,.intake-card.gold .swatch-icon circle,.intake-card.gold .swatch-icon line{stroke:var(--navy)}
-.swatch-code{font:600 11px/1 ui-monospace,Consolas,monospace;letter-spacing:.07em;color:var(--gold)}
-.intake-card.gold .swatch-code{color:var(--navy)}
-.swatch-label{background:var(--cream);color:var(--navy);padding:13px 15px;text-align:left}
-.swatch-label strong{display:block;font:600 15px "Segoe UI",Arial,sans-serif}
-.swatch-label span{display:block;margin-top:3px;font-size:12px;color:#5c5140}
-.intake-detail{display:none;width:100%;max-width:600px;text-align:left;border:1px solid var(--line);border-radius:12px;padding:15px;background:var(--surface)}
-.intake-detail.open{display:block}
-.intake-detail textarea{width:100%;min-height:100px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;color:var(--cream);padding:10px;font:inherit;resize:vertical;outline:0}
-.intake-detail textarea:focus{border-color:var(--gold)}
-.filerow{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
-.filebtn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border:1px dashed var(--line);border-radius:8px;color:var(--muted);cursor:pointer;font-size:13px}
-.filebtn:hover{border-color:var(--gold);color:var(--cream)}
-.filebtn input{display:none}
-.filestatus{color:var(--muted);font-size:12px}
-.start-button{margin-top:8px;padding:14px 34px;border:1px solid var(--gold);border-radius:10px;background:var(--gold);color:var(--navy);font-weight:800;cursor:pointer;font-size:15px}
-.start-button:disabled{opacity:.35;cursor:not-allowed}
-.start-hint{color:var(--muted);font-size:12px;margin-top:-14px}
-
-/* ---------- Stage 2: report ---------- */
-.app{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh;max-width:1500px;margin:auto;border-inline:1px solid var(--line)}
-.sidebar{padding:34px 24px;background:var(--gold-surface);border-right:1px solid var(--line)}
-.back-link{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-bottom:22px;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.04em}
-.back-link:hover{color:var(--gold)}
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:30px}
-.brand-logo{width:22px;height:22px;flex:none}
-.brand-name{display:block;color:var(--gold);font:20px Georgia,serif}
-.brand small{display:block;margin-top:3px;color:var(--muted);font:12px "Segoe UI",Arial,sans-serif}
-.side-title,.filter-label{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
-.side-title{margin:24px 0 12px;color:var(--gold)}
-.filter-group{margin-top:16px}
-.filter-label{margin-bottom:7px;color:var(--muted);letter-spacing:.07em}
-input[type=text],select,textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:8px;outline:0;background:var(--surface-2);color:var(--cream);font:inherit;resize:vertical}
-select option{color:var(--navy)}
-input:focus,select:focus,textarea:focus{border-color:var(--gold)}
-input[type=range]{width:100%;accent-color:var(--gold)}
-.range-value{color:var(--gold);font-size:12px}
-.selected-skills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 6px}
-.selected-skill{border:1px solid var(--line);border-radius:20px;padding:3px 8px;color:var(--gold);font-size:11px;cursor:pointer;background:var(--surface-2)}
-.run-button{width:100%;margin-top:24px;padding:12px;border:1px solid var(--gold);border-radius:8px;background:var(--gold);color:var(--navy);cursor:pointer;font-weight:800}
-.main{padding:46px clamp(24px,5vw,76px) 80px}
-.report-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding-bottom:29px;border-bottom:1px solid var(--line)}
-h1{margin:0;font:400 clamp(30px,4vw,48px)/1.1 Georgia,serif;color:var(--cream)}
-.report-head p{margin:10px 0 0;color:var(--muted)}
-.date{color:var(--gold);font-size:12px;white-space:nowrap}
-.tabs{display:flex;gap:30px;margin:26px 0 30px;border-bottom:1px solid var(--line)}
-.tab{padding:0 0 13px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer;font:600 14px inherit}
-.tab.active{border-color:var(--gold);color:var(--gold)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:32px}
-.stat{min-height:104px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-.stat span{display:block;color:var(--muted);font-size:12px}
-.stat strong{display:block;margin-top:13px;color:var(--cream);font:28px Georgia,serif}
-.panel{overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
-.table-head,.candidate{display:grid;grid-template-columns:70px minmax(190px,1.4fr) minmax(160px,1.4fr) 90px 86px;align-items:center;gap:16px}
-.table-head{padding:14px 22px;background:var(--gold-surface);color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-.candidate{padding:20px 22px;border-top:1px solid var(--line)}
-.candidate:hover{background:var(--surface-2)}
-.rank{color:var(--muted)}
-.rank.top{color:var(--gold);font-weight:800}
-.prestige-tag{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 9px;border-radius:20px;background:var(--gold);color:var(--navy);font-size:10px;font-weight:700;letter-spacing:.03em;vertical-align:middle;white-space:nowrap}
-.toggle-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.toggle-hint{display:block;margin-top:4px;color:var(--muted);font-size:11px;line-height:1.4}
-.switch{position:relative;display:inline-block;width:36px;height:20px;flex:none}
-.switch input{opacity:0;width:0;height:0}
-.switch-slider{position:absolute;inset:0;background:var(--line);border-radius:20px;cursor:pointer;transition:.18s}
-.switch-slider:before{content:"";position:absolute;height:14px;width:14px;left:3px;top:3px;background:var(--cream);border-radius:50%;transition:.18s}
-.switch input:checked+.switch-slider{background:var(--gold)}
-.switch input:checked+.switch-slider:before{transform:translateX(16px);background:var(--navy)}
-.candidate-name{color:var(--cream);font:20px Georgia,serif}
-.candidate-meta{margin-top:3px;color:var(--muted);font-size:12px}
-.skill-summary,.badges{display:flex;flex-wrap:wrap;gap:5px}
-.mini-skill{border-radius:12px;padding:2px 7px;background:var(--gold-surface);color:var(--gold);font-size:11px}
-.score{color:var(--gold);font:25px Georgia,serif}
-.expand{padding:7px 10px;border:1px solid var(--gold);border-radius:6px;background:transparent;color:var(--gold);cursor:pointer;font:600 12px inherit}
-.details-row{display:none;border-top:1px solid var(--line);background:var(--surface-2)}
-.details-row.open{display:block}
-.detail-label{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-.badge{margin-top:6px;padding:4px 8px;border-radius:5px;font-size:11px}
-.match{background:var(--match-bg);color:var(--match)}
-.missing{background:var(--missing-bg);color:var(--missing)}
-.penalty-note{margin-top:4px;color:var(--missing);font-size:11px;font-weight:700}
-.evidence{padding:20px 22px 26px}
-.evidence-meta{color:var(--muted);font-size:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
-.evidence-section{padding:14px 0;border-top:1px solid var(--line)}
-.evidence-section:first-of-type{border-top:0;padding-top:0}
-.evidence-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
-.fit-summary{text-align:center;margin-bottom:14px}
-.fit-big{font:36px Georgia,serif;color:var(--gold)}
-.metric-row{display:flex;align-items:center;gap:12px;margin:9px 0}
-.metric-label{width:130px;flex:none;color:var(--muted);font-size:12px}
-.metric-bar{flex:1;height:8px;border-radius:5px;background:var(--gold-surface);overflow:hidden}
-.metric-fill{height:100%;background:var(--gold);border-radius:5px}
-.metric-pct{width:40px;text-align:right;color:var(--cream);font-size:12px;font-weight:700}
-.evidence-skills{display:flex;flex-wrap:wrap;gap:8px 18px}
-.evidence-skill{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--cream)}
-.evidence-skill .mark{font-weight:800}
-.evidence-skill.matched .mark{color:var(--match)}
-.evidence-skill.missing{color:var(--muted)}
-.evidence-skill.missing .mark{color:var(--muted)}
-.why-text{margin:0;color:var(--cream);line-height:1.55}
-.next-steps{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
-.next-steps li{position:relative;padding-left:18px;color:var(--cream);font-size:13px;line-height:1.4}
-.next-steps li:before{content:"\2192";position:absolute;left:0;color:var(--gold);font-weight:800}
-.score-cell{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
-.view{display:none}
-.view.active{display:block}
-.comparison{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:16px}
-.compare-card,.details-copy{padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-.compare-card h3{margin:8px 0;font:23px Georgia,serif;color:var(--cream)}
-.compare-card p{color:var(--muted)}
-.details-copy{max-width:760px;border-left:2px solid var(--gold);color:var(--cream)}
-.details-copy h2{color:var(--cream)}
-.empty{padding:46px;color:var(--muted);text-align:center}
-@media(max-width:900px){
-  .app{display:block}
-  .sidebar{border-right:0;border-bottom:1px solid var(--line)}
-  .filter-row{display:grid;grid-template-columns:repeat(2,1fr);gap:0 16px}
-  .stats{grid-template-columns:repeat(2,1fr)}
-  .table-head{display:none}
-  .candidate{grid-template-columns:45px 1fr auto}
-  .candidate .skill-summary{display:none}
-  .candidate .score{grid-column:2}
-  .candidate .expand{grid-column:3;grid-row:1/span 2}
-  .intake-grid{grid-template-columns:1fr}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg-cream);
+  color: var(--navy);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-@media(max-width:560px){
-  .main{padding:34px 17px 60px}
-  .filter-row,.stats,.report-head{align-items:flex-start;flex-direction:column}
-  .candidate{padding:18px 14px}
-  .details-row{padding:0 14px 22px}
-  .landing{padding:44px 18px}
+
+.stage { display: none; }
+.stage.active { display: block; }
+
+h1, h2, h3, .serif-font {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* ------------ NAV BAR (top, pill-style) ------------ */
+.landing-header {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 24px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-pill-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #5A5B54;
+  border: 1px solid #7C7C77;
+  border-radius: 40px;
+  padding: 8px 12px 8px 18px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+}
+.nav-logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.logo-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.logo-wordmark {
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.03em;
+}
+.nav-cta-btn {
+  background: var(--navy);
+  color: var(--bg-cream);
+  border: none;
+  border-radius: 25px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+.nav-cta-btn:hover {
+  background: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+/* ------------ HERO SECTION — 2-COLUMN GRID ------------ */
+.landing-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 28px;
+}
+
+/* Two-column hero grid */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 45fr 55fr;
+  gap: 48px;
+  align-items: center;
+  padding: 48px 0 24px;
+}
+
+/* LEFT COLUMN */
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+.hero-title {
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-size: clamp(40px, 5.5vw, 68px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--navy);
+  letter-spacing: -0.04em;
+  margin: 0;
+  text-align: left;
+}
+.hero-title-line {
+  display: block;
+}
+.hero-subhead {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #ACAEB1;
+  max-width: 440px;
+  text-align: left;
+}
+.hero-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.hero-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold);
+  color: #0E1617;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 26px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(224, 197, 143, 0.35);
+  font-family: 'Inter', sans-serif;
+}
+.hero-btn-primary:hover {
+  background: var(--gold-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(224, 197, 143, 0.45);
+}
+.hero-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--navy);
+  border: 1px solid #DCDDE1;
+  border-radius: 30px;
+  padding: 12px 26px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+.hero-btn-outline:hover {
+  background: rgba(220, 221, 225, 0.08);
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-2px);
+}
+
+/* ------------ FEATURE BADGE ROW (below CTA, left-aligned) ------------ */
+.feature-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.feature-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #454641;
+  border: 1px solid var(--gold);
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+/* ------------ RIGHT COLUMN — FANNED CARD STACK ------------ */
+.hero-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 420px;
+  /* leave top padding for tabs poking above cards */
+  padding-top: 40px;
+}
+.fan-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 60%, rgba(224,197,143,0.10) 0%, rgba(14,22,23,0.35) 55%, transparent 78%);
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+/*
+  Fan stack: 4 cards, DOM order = card4 (back) first, card1 (front) last.
+  Each card is translated so all four are clearly visible.
+  z-index goes up so front card is always on top.
+*/
+.fan-stack {
+  position: relative;
+  width: 300px;   /* wide enough to show all rotated cards without overflow */
+  height: 320px;
+}
+
+/* All cards share base styles */
+.fan-card {
+  position: absolute;
+  width: 220px;
+  height: 280px;
+  background: #DCDDE1;
+  border-radius: 12px;
+  padding: 24px 20px 18px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  /* overflow visible so tabs poke above card top */
+  overflow: visible;
+}
+
+/* Card 4 — furthest back (DOM child 1) */
+.fan-card:nth-child(1) {
+  transform: rotate(-8deg) translate(-30px, 30px);
+  z-index: 1;
+  opacity: 0.40;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+}
+/* Card 3 (DOM child 2) */
+.fan-card:nth-child(2) {
+  transform: rotate(-3deg) translate(-12px, 16px);
+  z-index: 2;
+  opacity: 0.60;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.26);
+}
+/* Card 2 — second from front (DOM child 3) */
+.fan-card:nth-child(3) {
+  transform: rotate(2deg) translate(8px, 6px);
+  z-index: 3;
+  opacity: 0.85;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.30);
+}
+/* Card 1 — front card (DOM child 4) */
+.fan-card:nth-child(4) {
+  transform: rotate(6deg) translate(24px, 0px);
+  z-index: 4;
+  opacity: 1;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.40), 0 2px 8px rgba(224,197,143,0.12);
+}
+
+/* Hover lift on front card only */
+.fan-card:nth-child(4):hover {
+  transform: rotate(6deg) translate(24px, -8px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45), 0 4px 16px rgba(224,197,143,0.18);
+}
+
+/* ---------- Card tab (library index-card style) ---------- */
+.fan-tab {
+  position: absolute;
+  /* sits above top edge of card */
+  top: -28px;
+  left: 16px;
+  height: 28px;
+  min-width: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  color: #0E1617;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 0 12px;
+  border-radius: 6px 6px 0 0;
+  letter-spacing: 0.05em;
+  box-shadow: 0 -3px 10px rgba(224,197,143,0.35);
+  font-family: 'Inter', sans-serif;
+  /* ensure tab renders above sibling cards */
+  z-index: 5;
+}
+.fan-tab.muted {
+  background: #5A5B54;
+  color: #ACAEB1;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.18);
+  min-width: 44px;
+  height: 24px;
+  top: -24px;
+  left: 14px;
+}
+
+/* ---------- Card content placeholders ---------- */
+/* Bold name line */
+.fan-name-line {
+  height: 12px;
+  background: #2A2B27;
+  border-radius: 4px;
+  margin-bottom: 14px;
+  width: 65%;
+  opacity: 0.80;
+}
+/* Thin text lines */
+.fan-text-line {
+  height: 7px;
+  background: #8A8B86;
+  border-radius: 3px;
+  margin-bottom: 9px;
+  opacity: 0.55;
+}
+.fan-text-line.w-90 { width: 90%; }
+.fan-text-line.w-70 { width: 70%; }
+.fan-text-line.w-55 { width: 55%; }
+/* Extra lines to fill the taller card */
+.fan-text-line.w-80 { width: 80%; }
+.fan-text-line.w-40 { width: 40%; }
+
+@media(max-width: 860px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 32px 0 16px;
+  }
+  .hero-right {
+    min-height: 320px;
+    padding-top: 40px;
+  }
+  .fan-stack { width: 260px; height: 280px; }
+  .fan-card { width: 190px; height: 240px; }
+  .feature-badge-row { justify-content: flex-start; }
+}
+
+/* ------------ HERO IMAGE CARD (RESUME PEDESTAL SCENE) ------------ */
+.hero-image-card {
+  width: 100%;
+  max-width: 960px;
+  background: linear-gradient(180deg, #454641 0%, #0E1617 100%);
+  border: 1px solid var(--shellstone);
+  border-radius: 24px;
+  padding: 36px 32px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* // TODO: swap for animated 3D resume scene */
+.resume-pedestal-scene {
+  width: 100%;
+  height: 200px;
+  background: radial-gradient(circle at 50% 120%, rgba(224, 197, 143, 0.25) 0%, transparent 70%);
+  border-radius: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  align-items: end;
+  justify-items: center;
+  padding: 20px 10px 10px;
+  position: relative;
+}
+
+.pedestal-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.resume-doc-icon {
+  width: 58px;
+  height: 74px;
+  background: var(--navy);
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  position: relative;
+  transition: transform 0.2s ease;
+}
+.resume-doc-icon.sapphire {
+  background: var(--sapphire);
+}
+.resume-doc-icon:hover {
+  transform: translateY(-4px);
+}
+.resume-doc-icon::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-width: 0 12px 12px 0;
+  border-style: solid;
+  border-color: #454641 var(--bg-cream);
+  display: block;
+  width: 0;
+}
+.doc-line {
+  height: 4px;
+  background: var(--gold);
+  border-radius: 2px;
+  margin-bottom: 5px;
+  opacity: 0.85;
+}
+.doc-line.short { width: 55%; }
+.doc-line.medium { width: 75%; }
+.doc-line.long { width: 90%; }
+.doc-tag {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--gold);
+  color: var(--bg-cream);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.doc-tag.top-score {
+  background: var(--burgundy);
+  color: var(--bg-cream);
+}
+
+.pedestal-base {
+  width: 80px;
+  height: 18px;
+  background: linear-gradient(180deg, #454641 0%, var(--shellstone) 100%);
+  border-radius: 12px / 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(217, 203, 194, 0.8);
+}
+
+/* Intake Controls inside Hero Card */
+.intake-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+.intake-card {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--shellstone);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #454641;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.intake-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--navy);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+.intake-card.selected {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 2px var(--navy);
+}
+.swatch-top {
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--navy);
+}
+.intake-card.gold .swatch-top {
+  background: var(--sapphire);
+}
+.swatch-icon {
+  width: 28px;
+  height: 28px;
+}
+.swatch-icon path, .swatch-icon rect, .swatch-icon circle, .swatch-icon line {
+  stroke: var(--gold);
+}
+.swatch-code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+.swatch-label {
+  background: var(--bg-cream);
+  color: var(--navy);
+  padding: 14px 16px;
+  text-align: left;
+}
+.swatch-label strong {
+  display: block;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.swatch-label span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--sapphire);
+}
+
+.intake-detail {
+  display: none;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--shellstone);
+  border-radius: 12px;
+  padding: 16px;
+  background: #454641;
+  margin-top: -10px;
+}
+.intake-detail.open { display: block; }
+.intake-detail textarea {
+  width: 100%;
+  min-height: 100px;
+  background: var(--bg-cream);
+  border: 1px solid var(--shellstone);
+  border-radius: 8px;
+  color: var(--navy);
+  padding: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  resize: vertical;
+  outline: 0;
+}
+.intake-detail textarea:focus { border-color: var(--navy); }
+.filerow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.filebtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px dashed var(--shellstone);
+  border-radius: 8px;
+  color: var(--navy);
+  background: var(--bg-cream);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.2s ease;
+}
+.filebtn:hover { border-color: var(--navy); }
+.filebtn input { display: none; }
+.filestatus { color: var(--sapphire); font-size: 12px; }
+
+.start-button {
+  width: 100%;
+  padding: 16px 36px;
+  border: none;
+  border-radius: 30px;
+  background: var(--gold);
+  color: var(--bg-cream);
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(224, 197, 143, 0.4);
+  transition: all 0.2s ease;
+}
+.start-button:hover:not(:disabled) {
+  background: var(--gold-hover);
+  transform: translateY(-1px);
+}
+.start-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.start-hint {
+  color: var(--sapphire);
+  font-size: 13px;
+  margin-top: -18px;
+}
+
+/* ------------ DARK BAND SECTION ------------ */
+.dark-band-section {
+  width: 100%;
+  background: var(--navy);
+  padding: 72px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.dark-band-content {
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 32px;
+}
+.dark-band-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--bg-cream);
+  margin: 0;
+}
+.dark-band-burgundy-accent {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--burgundy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(107, 31, 42, 0.4);
+}
+.dark-band-labels {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 15px;
+}
+.dark-band-labels span {
+  display: block;
+}
+.dark-band-label-arrow {
+  color: var(--sapphire-muted);
+}
+@media(max-width: 700px) {
+  .dark-band-labels {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .dark-band-label-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* ------------ FOOTER CARD ------------ */
+.footer-card {
+  width: 100%;
+  max-width: 960px;
+  background: #454641;
+  border: 1px solid var(--shellstone);
+  border-radius: 20px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  text-align: left;
+}
+.footer-info h3 {
+  margin: 0;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.footer-info p {
+  margin: 6px 0 0;
+  color: var(--sapphire);
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 620px;
+}
+.footer-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold);
+  color: var(--bg-cream);
+  border: none;
+  border-radius: 25px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(224, 197, 143, 0.3);
+}
+.footer-cta-btn:hover {
+  background: var(--gold-hover);
+  transform: translateY(-1px);
+}
+
+/* ------------ STAGE 2: REPORT DASHBOARD STYLES ------------ */
+.app {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  min-height: 100vh;
+  max-width: 1500px;
+  margin: auto;
+  border-inline: 1px solid var(--shellstone);
+  background: var(--bg-cream);
+}
+.sidebar {
+  padding: 34px 24px;
+  background: #454641;
+  border-right: 1px solid var(--shellstone);
+}
+.back-link {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 22px;
+  color: var(--sapphire);
+  font-size: 13px;
+  font-weight: 700;
+}
+.back-link:hover { color: var(--navy); }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+.brand-name {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.brand small {
+  display: block;
+  margin-top: 2px;
+  color: var(--sapphire);
+  font-size: 12px;
+}
+.side-title, .filter-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.side-title { margin: 24px 0 12px; color: var(--navy); }
+.filter-group { margin-top: 16px; }
+.filter-label { margin-bottom: 7px; color: var(--sapphire); }
+input[type=text], select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--shellstone);
+  border-radius: 8px;
+  outline: 0;
+  background: #454641;
+  color: var(--navy);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+}
+select option { color: var(--navy); }
+input:focus, select:focus, textarea:focus { border-color: var(--navy); }
+input[type=range] { width: 100%; accent-color: var(--navy); }
+.range-value { color: var(--navy); font-size: 12px; font-weight: 700; }
+.selected-skills { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+.selected-skill {
+  border: 1px solid var(--shellstone);
+  border-radius: 20px;
+  padding: 4px 10px;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #454641;
+}
+.run-button {
+  width: 100%;
+  margin-top: 24px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--navy);
+  color: var(--bg-cream);
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.run-button:hover { background: #FFFFFF; }
+
+.main { padding: 46px clamp(24px, 5vw, 76px) 80px; }
+.report-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--shellstone);
+}
+.report-head h1 {
+  margin: 0;
+  font-family: 'Archivo Black', sans-serif;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 700;
+  color: var(--navy);
+}
+.report-head p { margin: 8px 0 0; color: var(--sapphire); }
+.date { color: var(--sapphire); font-size: 12px; white-space: nowrap; font-weight: 500; }
+.tabs { display: flex; gap: 28px; margin: 24px 0 28px; border-bottom: 1px solid var(--shellstone); }
+.tab {
+  padding: 0 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--sapphire);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+}
+.tab.active { border-color: var(--navy); color: var(--navy); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.stat {
+  min-height: 96px;
+  padding: 18px;
+  border: 1px solid var(--shellstone);
+  border-radius: 14px;
+  background: #454641;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+.stat span { display: block; color: var(--sapphire); font-size: 12px; font-weight: 500; }
+.stat strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--navy);
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+}
+.panel { overflow: hidden; border: 1px solid var(--shellstone); border-radius: 16px; background: #454641; }
+.table-head, .candidate {
+  display: grid;
+  grid-template-columns: 70px minmax(190px, 1.4fr) minmax(160px, 1.4fr) 90px 86px;
+  align-items: center;
+  gap: 16px;
+}
+.table-head {
+  padding: 14px 22px;
+  background: #454641;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.candidate { padding: 20px 22px; border-top: 1px solid var(--shellstone); }
+.candidate:hover { background: var(--bg-cream); }
+.rank { color: var(--sapphire); font-weight: 600; }
+.rank.top { color: var(--navy); font-weight: 800; }
+.prestige-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 20px;
+  background: var(--gold);
+  color: var(--bg-cream);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  vertical-align: middle;
+}
+.candidate-name { color: var(--navy); font-family: 'Archivo Black', sans-serif; font-size: 20px; font-weight: 700; }
+.candidate-meta { margin-top: 3px; color: var(--sapphire); font-size: 12px; }
+.skill-summary, .badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.mini-skill { border-radius: 12px; padding: 3px 8px; background: #454641; color: var(--navy); font-size: 11px; font-weight: 600; }
+.score { color: var(--navy); font-family: 'Archivo Black', sans-serif; font-size: 26px; font-weight: 700; }
+.expand {
+  padding: 8px 12px;
+  border: 1px solid var(--navy);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--navy);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.15s ease;
+}
+.expand:hover { background: var(--navy); color: var(--bg-cream); }
+.details-row { display: none; border-top: 1px solid var(--shellstone); background: var(--bg-cream); }
+.details-row.open { display: block; }
+.evidence { padding: 22px 24px 28px; }
+.evidence-meta { color: var(--sapphire); font-size: 13px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--shellstone); }
+.evidence-section { padding: 16px 0; border-top: 1px solid var(--shellstone); }
+.evidence-section:first-of-type { border-top: 0; padding-top: 0; }
+.evidence-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--navy); margin-bottom: 12px; }
+.fit-summary { text-align: center; margin-bottom: 14px; }
+.fit-big { font-family: 'Archivo Black', sans-serif; font-size: 38px; font-weight: 700; color: var(--navy); }
+.metric-row { display: flex; align-items: center; gap: 12px; margin: 9px 0; }
+.metric-label { width: 130px; flex: none; color: var(--sapphire); font-size: 12px; }
+.metric-bar { flex: 1; height: 8px; border-radius: 5px; background: #454641; overflow: hidden; }
+.metric-fill { height: 100%; background: var(--navy); border-radius: 5px; }
+.metric-pct { width: 40px; text-align: right; color: var(--navy); font-size: 12px; font-weight: 700; }
+.evidence-skills { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.evidence-skill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--navy); }
+.evidence-skill .mark { font-weight: 800; }
+.evidence-skill.matched .mark { color: var(--match-green); }
+.evidence-skill.missing { color: var(--sapphire); }
+.why-text { margin: 0; color: var(--navy); line-height: 1.6; }
+.next-steps { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.next-steps li { position: relative; padding-left: 18px; color: var(--navy); font-size: 13px; line-height: 1.4; }
+.next-steps li:before { content: "→"; position: absolute; left: 0; color: var(--gold); font-weight: 800; }
+.score-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.badge { margin-top: 6px; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; }
+.match { background: var(--match-bg); color: var(--match-green); }
+.missing { background: var(--missing-bg); color: var(--missing-red); }
+.penalty-note { margin-top: 4px; color: var(--missing-red); font-size: 11px; font-weight: 700; }
+.view { display: none; }
+.view.active { display: block; }
+.comparison { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 16px; }
+.compare-card, .details-copy { padding: 22px; border: 1px solid var(--shellstone); border-radius: 14px; background: #454641; }
+.compare-card h3 { margin: 8px 0; font-family: 'Archivo Black', sans-serif; font-size: 22px; font-weight: 700; color: var(--navy); }
+.compare-card p { color: var(--sapphire); }
+.details-copy { max-width: 760px; border-left: 3px solid var(--navy); color: var(--navy); }
+.details-copy h2 { color: var(--navy); font-family: 'Archivo Black', sans-serif; }
+.empty { padding: 46px; color: var(--sapphire); text-align: center; }
+
+.toggle-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.toggle-hint { display: block; margin-top: 4px; color: var(--sapphire); font-size: 11px; line-height: 1.4; }
+.switch { position: relative; display: inline-block; width: 36px; height: 20px; flex: none; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch-slider { position: absolute; inset: 0; background: var(--shellstone); border-radius: 20px; cursor: pointer; transition: .18s; }
+.switch-slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; top: 3px; background: #454641; border-radius: 50%; transition: .18s; }
+.switch input:checked+.switch-slider { background: var(--navy); }
+.switch input:checked+.switch-slider:before { transform: translateX(16px); background: var(--gold); }
+
+@media(max-width: 900px) {
+  .app { display: block; }
+  .sidebar { border-right: 0; border-bottom: 1px solid var(--shellstone); }
+  .filter-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 16px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .table-head { display: none; }
+  .candidate { grid-template-columns: 45px 1fr auto; }
+  .candidate .skill-summary { display: none; }
+  .intake-grid { grid-template-columns: 1fr; }
+  .footer-card { flex-direction: column; text-align: center; }
+  .resume-pedestal-scene { grid-template-columns: repeat(2, 1fr); height: auto; row-gap: 20px; }
+}
+@media(max-width: 560px) {
+  .main { padding: 34px 17px 60px; }
+  .landing-content { padding: 24px 16px 44px; }
+  .hero-title { font-size: 34px; }
 }
 </style></head>
 <body>
 
-<!-- ===================== STAGE 1 — INTAKE ===================== -->
+<!-- ===================== STAGE 1 — INTAKE / HOMEPAGE ===================== -->
 <section class="stage active landing" id="landingStage">
-  <div class="hero-lockup">
-    <svg class="hero-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle class="hero-logo-bg" cx="12" cy="12" r="11"/>
-      <path class="hero-logo-tick" d="M7 12.4l3.3 3.3L17.2 8.4" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <div>
-      <span class="hero-word">Shortlist</span>
-      <span class="hero-caption">Employer candidate review</span>
-    </div>
-  </div>
-  <h1>Match candidates to the role</h1>
-  <p class="lede">Add the job listing and the resumes you're screening. Matching starts once both are in.</p>
-
-  <div class="intake-grid">
-    <button class="intake-card" id="jdCard" type="button">
-      <div class="swatch-top">
-        <svg class="swatch-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><line x1="9.5" y1="12" x2="15.5" y2="12"/><line x1="9.5" y1="15.5" x2="15.5" y2="15.5"/></svg>
-        <span class="swatch-code">JD · 01</span>
+  <header class="landing-header">
+    <div class="nav-pill-bar">
+      <div class="nav-logo-mark">
+        <div class="logo-icon-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E1617" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M9 15l2 2 4-4"></path>
+          </svg>
+        </div>
+        <span class="logo-wordmark">Shortlistr</span>
       </div>
-      <div class="swatch-label"><strong>Job description</strong><span id="jdStatus">Paste text or upload a file</span></div>
-    </button>
-    <button class="intake-card gold" id="resumeCard" type="button">
-      <div class="swatch-top">
-        <svg class="swatch-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><circle cx="11.5" cy="13" r="2"/><path d="M8.5 18.5c.6-1.8 2-2.7 3-2.7s2.4.9 3 2.7"/></svg>
-        <span class="swatch-code">CV · 02</span>
+    </div>
+  </header>
+
+  <main class="landing-content">
+    <!-- HERO 2-COLUMN GRID -->
+    <div class="hero-grid">
+
+      <!-- LEFT COLUMN: headline + subhead + CTAs + badges -->
+      <div class="hero-left">
+        <h1 class="hero-title">
+          <span class="hero-title-line">No resume</span>
+          <span class="hero-title-line">left unread.</span>
+        </h1>
+
+        <p class="hero-subhead">Hybrid keyword and semantic resume matching with transparent, explainable candidate scoring — no black-box AI decisions.</p>
+
+        <div class="hero-cta-row">
+          <button class="hero-btn-primary" onclick="document.getElementById('jdCard').scrollIntoView({behavior:'smooth'})">Try it now</button>
+          <button class="hero-btn-outline" onclick="document.getElementById('howItWorks').scrollIntoView({behavior:'smooth'})">See how it works</button>
+        </div>
+
+        <!-- FEATURE BADGES (left-aligned, below buttons) -->
+        <div class="feature-badge-row">
+          <div class="feature-badge-pill">
+            <span class="badge-dot"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DCDDE1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Keyword Matching</span>
+          </div>
+          <div class="feature-badge-pill">
+            <span class="badge-dot"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DCDDE1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path></svg>
+            <span>Semantic Matching</span>
+          </div>
+          <div class="feature-badge-pill">
+            <span class="badge-dot"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DCDDE1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <span>Explainable Scoring</span>
+          </div>
+        </div>
       </div>
-      <div class="swatch-label"><strong>Resumes</strong><span id="resumeStatus">Upload PDF or JPG files</span></div>
-    </button>
-  </div>
 
-  <div class="intake-detail" id="jdDetail">
-    <textarea id="jobDescription" rows="4" placeholder="Paste responsibilities, requirements and preferred skills…"></textarea>
-    <div class="filerow">
-      <label class="filebtn" for="jdFileInput">Or upload a file<input id="jdFileInput" type="file" accept=".pdf,.doc,.docx,.txt"></label>
-      <span class="filestatus" id="jdFileStatus"></span>
-    </div>
-  </div>
-  <div class="intake-detail" id="resumeDetail">
-    <div class="filerow">
-      <label class="filebtn" for="fileInput">Choose files<input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg" multiple></label>
-      <span class="filestatus" id="resumeFileStatus">No files selected</span>
-    </div>
-  </div>
+      <!-- RIGHT COLUMN: Fanned resume card stack -->
+      <!-- DOM order: card4 (furthest back) first → card1 (front) last -->
+      <div class="hero-right">
+        <div class="fan-glow"></div>
+        <div class="fan-stack">
 
-  <button class="start-button" id="runButton" disabled>Start matching</button>
-  <span class="start-hint" id="startHint">Add a job description and at least one resume to continue</span>
+          <!-- Card 4 — furthest back, no tab -->
+          <div class="fan-card">
+            <div class="fan-name-line"></div>
+            <div class="fan-text-line w-90"></div>
+            <div class="fan-text-line w-70"></div>
+            <div class="fan-text-line w-55"></div>
+            <div class="fan-text-line w-80"></div>
+            <div class="fan-text-line w-40"></div>
+          </div>
+
+          <!-- Card 3 — no tab -->
+          <div class="fan-card">
+            <div class="fan-name-line"></div>
+            <div class="fan-text-line w-90"></div>
+            <div class="fan-text-line w-55"></div>
+            <div class="fan-text-line w-70"></div>
+            <div class="fan-text-line w-80"></div>
+            <div class="fan-text-line w-40"></div>
+          </div>
+
+          <!-- Card 2 — muted tab "82%" -->
+          <div class="fan-card">
+            <div class="fan-tab muted">82%</div>
+            <div class="fan-name-line"></div>
+            <div class="fan-text-line w-90"></div>
+            <div class="fan-text-line w-70"></div>
+            <div class="fan-text-line w-55"></div>
+            <div class="fan-text-line w-80"></div>
+            <div class="fan-text-line w-40"></div>
+          </div>
+
+          <!-- Card 1 — front, gold tab "89%" -->
+          <div class="fan-card">
+            <div class="fan-tab">89%</div>
+            <div class="fan-name-line"></div>
+            <div class="fan-text-line w-90"></div>
+            <div class="fan-text-line w-70"></div>
+            <div class="fan-text-line w-55"></div>
+            <div class="fan-text-line w-80"></div>
+            <div class="fan-text-line w-40"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /hero-grid -->
+
+    <!-- HERO IMAGE CARD (RESUME PEDESTAL SCENE) -->
+    <div class="hero-image-card">
+      <!-- // TODO: swap for animated 3D resume scene -->
+      <div class="resume-pedestal-scene">
+        <div class="pedestal-item">
+          <div class="resume-doc-icon">
+            <span class="doc-tag top-score">98%</span>
+            <div class="doc-line medium"></div>
+            <div class="doc-line short"></div>
+            <div class="doc-line long"></div>
+          </div>
+          <div class="pedestal-base"></div>
+        </div>
+        <div class="pedestal-item">
+          <div class="resume-doc-icon sapphire">
+            <span class="doc-tag">92%</span>
+            <div class="doc-line long"></div>
+            <div class="doc-line short"></div>
+            <div class="doc-line medium"></div>
+          </div>
+          <div class="pedestal-base"></div>
+        </div>
+        <div class="pedestal-item">
+          <div class="resume-doc-icon">
+            <span class="doc-tag">88%</span>
+            <div class="doc-line short"></div>
+            <div class="doc-line medium"></div>
+            <div class="doc-line short"></div>
+          </div>
+          <div class="pedestal-base"></div>
+        </div>
+        <div class="pedestal-item">
+          <div class="resume-doc-icon sapphire">
+            <span class="doc-tag">85%</span>
+            <div class="doc-line medium"></div>
+            <div class="doc-line long"></div>
+            <div class="doc-line short"></div>
+          </div>
+          <div class="pedestal-base"></div>
+        </div>
+      </div>
+
+      <!-- INTAKE CONTROLS -->
+      <div class="intake-grid">
+        <button class="intake-card" id="jdCard" type="button">
+          <div class="swatch-top">
+            <svg class="swatch-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><line x1="9.5" y1="12" x2="15.5" y2="12"/><line x1="9.5" y1="15.5" x2="15.5" y2="15.5"/></svg>
+            <span class="swatch-code">JD · 01</span>
+          </div>
+          <div class="swatch-label"><strong>Job description</strong><span id="jdStatus">Paste text or upload a file</span></div>
+        </button>
+        <button class="intake-card gold" id="resumeCard" type="button">
+          <div class="swatch-top">
+            <svg class="swatch-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><circle cx="11.5" cy="13" r="2"/><path d="M8.5 18.5c.6-1.8 2-2.7 3-2.7s2.4.9 3 2.7"/></svg>
+            <span class="swatch-code">CV · 02</span>
+          </div>
+          <div class="swatch-label"><strong>Resumes</strong><span id="resumeStatus">Upload PDF or JPG files</span></div>
+        </button>
+      </div>
+
+      <div class="intake-detail" id="jdDetail">
+        <textarea id="jobDescription" rows="4" placeholder="Paste responsibilities, requirements and preferred skills…"></textarea>
+        <div class="filerow">
+          <label class="filebtn" for="jdFileInput">Or upload a file<input id="jdFileInput" type="file" accept=".pdf,.doc,.docx,.txt"></label>
+          <span class="filestatus" id="jdFileStatus"></span>
+        </div>
+      </div>
+      <div class="intake-detail" id="resumeDetail">
+        <div class="filerow">
+          <label class="filebtn" for="fileInput">Choose files<input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg" multiple></label>
+          <span class="filestatus" id="resumeFileStatus">No files selected</span>
+        </div>
+      </div>
+
+      <button class="start-button" id="runButton" disabled>Start matching</button>
+      <span class="start-hint" id="startHint">Add a job description and at least one resume to continue</span>
+    </div>
+  </main>
+
+  <!-- DARK BAND SECTION -->
+  <!-- anchor for 'See how it works' scroll -->
+  <section class="dark-band-section" id="howItWorks">
+    <div class="dark-band-content">
+      <div class="dark-band-burgundy-accent">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0E1617" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg>
+      </div>
+      <h2 class="dark-band-title">How it works</h2>
+      <div class="dark-band-labels">
+        <span>Upload JD & Resumes</span>
+        <span class="dark-band-label-arrow">&rarr;</span>
+        <span>Semantic Match</span>
+        <span class="dark-band-label-arrow">&rarr;</span>
+        <span>Explainable Report</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="landing-content" style="padding-top: 0;">
+    <!-- FOOTER CARD -->
+    <div class="footer-card">
+      <div class="footer-info">
+        <h3>Shortlistr</h3>
+        <p>Hybrid keyword and semantic resume matching with transparent, explainable candidate scoring — no black-box AI decisions.</p>
+      </div>
+      <button class="footer-cta-btn" onclick="document.getElementById('jdCard').scrollIntoView({behavior:'smooth'})">Try it now &rarr;</button>
+    </div>
+  </main>
 </section>
 
 <!-- ===================== STAGE 2 — REPORT ===================== -->
@@ -252,11 +1241,14 @@ h1{margin:0;font:400 clamp(30px,4vw,48px)/1.1 Georgia,serif;color:var(--cream)}
 <aside class="sidebar">
   <button class="back-link" id="backLink" type="button">&larr; New search</button>
   <div class="brand">
-    <svg class="brand-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle class="hero-logo-bg" cx="12" cy="12" r="11"/>
-      <path class="hero-logo-tick" d="M7 12.4l3.3 3.3L17.2 8.4" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <div><span class="brand-name">Shortlist.</span><small>Employer candidate review</small></div>
+    <div class="logo-icon-badge">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E1617" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <path d="M9 15l2 2 4-4"></path>
+      </svg>
+    </div>
+    <div><span class="brand-name">Shortlistr</span><small>Candidate shortlisting report</small></div>
   </div>
   <span class="side-title">Filters</span>
   <div class="filter-row">
@@ -267,7 +1259,7 @@ h1{margin:0;font:400 clamp(30px,4vw,48px)/1.1 Georgia,serif;color:var(--cream)}
     <div class="filter-group"><label class="filter-label" for="statusFilter">Employment status</label><select id="statusFilter"><option value="">Any status</option><option>Employed</option><option>Open to work</option><option>Not specified</option></select></div>
     <div class="filter-group prestige-toggle">
       <div class="toggle-head"><span class="filter-label" style="margin-bottom:0">Notable school / employer tag</span><label class="switch"><input type="checkbox" id="prestigeToggle"><span class="switch-slider"></span></label></div>
-      <span class="toggle-hint">Off by default. Scores already exclude name-recognition (see resume_matcher's prestige-neutral scoring) — this only reveals the signal, it never changes rank.</span>
+      <span class="toggle-hint">Off by default. Scores already exclude name-recognition — this only reveals the signal, it never changes rank.</span>
     </div>
   </div>
   <button class="run-button" id="rerunButton">Re-run ranking</button>
