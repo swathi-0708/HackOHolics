@@ -24,6 +24,7 @@ html = html.replace('{{CANDIDATES_JSON}}', '[]')
 html = html.replace('{{JD_TEXT}}', '')
 html = html.replace('{{RENDER_TS}}', '2026-09-12')
 html = html.replace('{{PIPELINE_MS}}', '0')
+html = html.replace('{{DATA_JSON}}', '{"jd_required_skills":[],"candidates":[]}')
 
 with open('resume_matcher/output/preview.html', 'w', encoding='utf-8') as f:
     f.write(html)

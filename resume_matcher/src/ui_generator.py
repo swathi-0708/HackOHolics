@@ -68,11 +68,29 @@ h1, h2, h3, .serif-font {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  background: #5A5B54;
-  border: 1px solid #7C7C77;
-  border-radius: 40px;
-  padding: 8px 12px 8px 18px;
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+  background: rgba(69, 70, 65, 0.55);
+  border-bottom: 1px solid #454641;
+  padding: 16px 8px;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav-links a {
+  color: #ACAEB1;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  transition: color 0.2s ease;
+}
+.nav-links a:hover { color: #DCDDE1; }
+@media (max-width: 720px) {
+  .nav-links { display: none; }
 }
 .nav-logo-mark {
   display: flex;
@@ -391,6 +409,168 @@ h1, h2, h3, .serif-font {
   .feature-badge-row { justify-content: flex-start; }
 }
 
+/* ------------ CARD CATALOG DRAWER (replaces live score card) ------------ */
+.card-catalog {
+  position: relative;
+  width: 360px;
+  padding-top: 16px;
+}
+.catalog-guide-tab {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(108px) rotate(4deg);
+  z-index: 1;
+  width: 54px;
+  background: var(--gold);
+  color: #0E1617;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.25);
+  z-index: 1;
+}
+.catalog-fan {
+  position: relative;
+  width: 100%;
+  height: 175px;
+  z-index: 2;
+}
+.catalog-card {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 290px;
+  background: var(--navy);
+  border-radius: 4px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+  transform-origin: bottom center;
+}
+.catalog-card.layer-1 {
+  height: 120px;
+  transform: translateX(calc(-50% - 14px)) rotate(-9deg);
+  opacity: 0.45;
+}
+.catalog-card.layer-2 {
+  height: 140px;
+  transform: translateX(calc(-50% - 6px)) rotate(-4deg);
+  opacity: 0.65;
+  background: #CBD6D3;
+}
+.catalog-card.layer-3 {
+  height: 158px;
+  transform: translateX(-50%) rotate(2deg);
+  opacity: 0.85;
+}
+.catalog-card.front {
+  height: auto;
+  transform: translateX(calc(-50% + 4px)) rotate(-1.5deg);
+  padding: 18px 20px 16px;
+  z-index: 3;
+}
+.catalog-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+.catalog-card-name {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0E1617;
+}
+.catalog-card-badge {
+  background: var(--gold);
+  color: #0E1617;
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 800;
+  font-size: 13px;
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+.catalog-card-role {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  color: #6E6F69;
+  margin-bottom: 10px;
+}
+.catalog-card-divider {
+  border-top: 1px dashed rgba(14,22,23,0.25);
+  margin-bottom: 10px;
+}
+.catalog-card-line {
+  display: flex;
+  justify-content: space-between;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  color: #454641;
+  margin-bottom: 6px;
+}
+.catalog-card-line span:last-child { font-weight: 700; color: #0E1617; }
+.catalog-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.catalog-tag {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #0E1617;
+  background: rgba(224,197,143,0.35);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  padding: 3px 7px;
+}
+.catalog-drawer-box {
+  position: relative;
+  width: 100%;
+  height: 92px;
+  margin-top: -22px;
+  background: linear-gradient(180deg, #55564f, #3a3b36);
+  border-top: 3px solid var(--gold);
+  border-radius: 3px 3px 10px 10px;
+  clip-path: polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%);
+  box-shadow: 0 22px 48px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 12px;
+}
+.catalog-drawer-label {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-transform: uppercase;
+  background: rgba(224,197,143,0.12);
+  border: 1px solid rgba(224,197,143,0.4);
+  padding: 3px 10px;
+  border-radius: 3px;
+}
+
+/* ------------ TRUST BAR (feature tags moved below the fold) ------------ */
+.trust-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  padding: 20px 0 8px;
+  border-top: 1px solid #454641;
+}
+.trust-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 500; color: #7C7C77;
+}
+.trust-item svg { flex-shrink: 0; opacity: 0.7; }
+
 /* ------------ HERO IMAGE CARD (RESUME PEDESTAL SCENE) ------------ */
 .hero-image-card {
   width: 100%;
@@ -407,214 +587,153 @@ h1, h2, h3, .serif-font {
   overflow: hidden;
 }
 
-/* // TODO: swap for animated 3D resume scene */
-.resume-pedestal-scene {
-  width: 100%;
-  height: 200px;
-  background: radial-gradient(circle at 50% 120%, rgba(224, 197, 143, 0.25) 0%, transparent 70%);
-  border-radius: 16px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  align-items: end;
-  justify-items: center;
-  padding: 20px 10px 10px;
-  position: relative;
-}
-
-.pedestal-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-}
-
-.resume-doc-icon {
-  width: 58px;
-  height: 74px;
-  background: var(--navy);
-  border-radius: 6px;
-  padding: 8px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-  position: relative;
-  transition: transform 0.2s ease;
-}
-.resume-doc-icon.sapphire {
-  background: var(--sapphire);
-}
-.resume-doc-icon:hover {
-  transform: translateY(-4px);
-}
-.resume-doc-icon::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  border-width: 0 12px 12px 0;
-  border-style: solid;
-  border-color: #454641 var(--bg-cream);
-  display: block;
-  width: 0;
-}
-.doc-line {
-  height: 4px;
-  background: var(--gold);
-  border-radius: 2px;
-  margin-bottom: 5px;
-  opacity: 0.85;
-}
-.doc-line.short { width: 55%; }
-.doc-line.medium { width: 75%; }
-.doc-line.long { width: 90%; }
-.doc-tag {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: var(--gold);
-  color: var(--bg-cream);
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 5px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.doc-tag.top-score {
-  background: var(--burgundy);
-  color: var(--bg-cream);
-}
-
-.pedestal-base {
-  width: 80px;
-  height: 18px;
-  background: linear-gradient(180deg, #454641 0%, var(--shellstone) 100%);
-  border-radius: 12px / 6px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(217, 203, 194, 0.8);
-}
-
-/* Intake Controls inside Hero Card */
-.intake-grid {
+/* ------------ UPLOAD CARDS (JD + Resumes) ------------ */
+.upload-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   width: 100%;
 }
-.intake-card {
-  all: unset;
-  cursor: pointer;
+.upload-card {
+  background: linear-gradient(180deg, #171d1e 0%, #0E1617 100%);
+  border: 1px solid #2b2f2c;
+  border-radius: 18px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--shellstone);
-  border-radius: 16px;
-  overflow: hidden;
-  background: #454641;
-  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  gap: 14px;
+  text-align: left;
 }
-.intake-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--navy);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+.upload-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.intake-card.selected {
-  border-color: var(--navy);
-  box-shadow: 0 0 0 2px var(--navy);
+.upload-card-header svg { flex-shrink: 0; }
+.upload-card-header svg path, .upload-card-header svg line, .upload-card-header svg circle {
+  stroke: var(--gold);
 }
-.swatch-top {
-  height: 96px;
+.upload-card-header span {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--navy);
+}
+.upload-dropzone {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: var(--navy);
+  gap: 6px;
+  border: 1.5px dashed rgba(224, 197, 143, 0.45);
+  border-radius: 12px;
+  padding: 22px 16px;
+  cursor: pointer;
+  text-align: center;
+  background: rgba(224, 197, 143, 0.03);
+  transition: border-color 0.18s ease, background 0.18s ease;
 }
-.intake-card.gold .swatch-top {
-  background: var(--sapphire);
+.upload-dropzone:hover {
+  border-color: var(--gold);
+  background: rgba(224, 197, 143, 0.07);
 }
-.swatch-icon {
-  width: 28px;
-  height: 28px;
-}
-.swatch-icon path, .swatch-icon rect, .swatch-icon circle, .swatch-icon line {
-  stroke: var(--gold);
-}
-.swatch-code {
-  font-family: ui-monospace, Consolas, monospace;
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--gold);
-}
-.swatch-label {
-  background: var(--bg-cream);
+.upload-dropzone strong {
+  font-size: 13px;
   color: var(--navy);
-  padding: 14px 16px;
-  text-align: left;
-}
-.swatch-label strong {
-  display: block;
-  font-family: 'Archivo Black', sans-serif;
-  font-size: 16px;
   font-weight: 700;
-  color: var(--navy);
 }
-.swatch-label span {
-  display: block;
-  margin-top: 3px;
-  font-size: 12px;
+.upload-dropzone span {
+  font-size: 11.5px;
   color: var(--sapphire);
 }
-
-.intake-detail {
-  display: none;
-  width: 100%;
-  text-align: left;
-  border: 1px solid var(--shellstone);
-  border-radius: 12px;
-  padding: 16px;
-  background: #454641;
-  margin-top: -10px;
+.upload-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.intake-detail.open { display: block; }
-.intake-detail textarea {
-  width: 100%;
-  min-height: 100px;
-  background: var(--bg-cream);
-  border: 1px solid var(--shellstone);
-  border-radius: 8px;
-  color: var(--navy);
-  padding: 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  resize: vertical;
-  outline: 0;
-}
-.intake-detail textarea:focus { border-color: var(--navy); }
-.filerow {
+.upload-file-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 10px;
-  flex-wrap: wrap;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #2b2f2c;
+  border-radius: 10px;
+  padding: 9px 12px;
 }
-.filebtn {
-  display: inline-flex;
+.upload-file-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  background: rgba(224, 197, 143, 0.15);
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border: 1px dashed var(--shellstone);
-  border-radius: 8px;
-  color: var(--navy);
-  background: var(--bg-cream);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: border-color 0.2s ease;
+  justify-content: center;
+  flex-shrink: 0;
 }
-.filebtn:hover { border-color: var(--navy); }
-.filebtn input { display: none; }
-.filestatus { color: var(--sapphire); font-size: 12px; }
+.upload-file-icon svg { width: 14px; height: 14px; stroke: var(--gold); }
+.upload-file-meta { flex: 1; min-width: 0; }
+.upload-file-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.upload-file-sub {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  color: var(--sapphire);
+  margin-top: 1px;
+}
+.upload-file-sub .done { color: var(--match-green); font-weight: 600; }
+.upload-file-remove {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--sapphire);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.upload-file-remove:hover { color: var(--missing-red); background: var(--missing-bg); }
+.upload-textarea {
+  width: 100%;
+  min-height: 64px;
+  resize: vertical;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid #2b2f2c;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--navy);
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  outline: 0;
+}
+.upload-textarea::placeholder { color: var(--sapphire); }
+.upload-textarea:focus { border-color: var(--gold); }
+.upload-status-line { font-size: 11.5px; color: var(--sapphire); }
+.upload-action-btn {
+  align-self: flex-start;
+  padding: 9px 20px;
+  border: none;
+  border-radius: 24px;
+  background: var(--gold);
+  color: var(--bg-cream);
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.upload-action-btn:hover { background: var(--gold-hover); transform: translateY(-1px); }
 
 .start-button {
   width: 100%;
@@ -1006,9 +1125,8 @@ input[type=range] { width: 100%; accent-color: var(--navy); }
   .table-head { display: none; }
   .candidate { grid-template-columns: 45px 1fr auto; }
   .candidate .skill-summary { display: none; }
-  .intake-grid { grid-template-columns: 1fr; }
+  .upload-grid { grid-template-columns: 1fr; }
   .footer-card { flex-direction: column; text-align: center; }
-  .resume-pedestal-scene { grid-template-columns: repeat(2, 1fr); height: auto; row-gap: 20px; }
 }
 @media(max-width: 560px) {
   .main { padding: 34px 17px 60px; }
@@ -1032,6 +1150,12 @@ input[type=range] { width: 100%; accent-color: var(--navy); }
         </div>
         <span class="logo-wordmark">Shortlistr</span>
       </div>
+      <ul class="nav-links">
+        <li><a href="#howItWorks">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#docs">Docs</a></li>
+      </ul>
+      <button class="nav-cta-btn" onclick="document.getElementById('jdCard').scrollIntoView({behavior:'smooth'})">Get Started</button>
     </div>
   </header>
 
@@ -1046,157 +1170,109 @@ input[type=range] { width: 100%; accent-color: var(--navy); }
           <span class="hero-title-line">left unread.</span>
         </h1>
 
-        <p class="hero-subhead">Hybrid keyword and semantic resume matching with transparent, explainable candidate scoring — no black-box AI decisions.</p>
+        <p class="hero-subhead">Screen candidates with complete transparency. Shortlistr combines precision keywords with context-aware AI so you never miss top talent — and always know why they matched.</p>
 
         <div class="hero-cta-row">
-          <button class="hero-btn-primary" onclick="document.getElementById('jdCard').scrollIntoView({behavior:'smooth'})">Try it now</button>
-          <button class="hero-btn-outline" onclick="document.getElementById('howItWorks').scrollIntoView({behavior:'smooth'})">See how it works</button>
-        </div>
-
-        <!-- FEATURE BADGES (left-aligned, below buttons) -->
-        <div class="feature-badge-row">
-          <div class="feature-badge-pill">
-            <span class="badge-dot"></span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DCDDE1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <span>Keyword Matching</span>
-          </div>
-          <div class="feature-badge-pill">
-            <span class="badge-dot"></span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DCDDE1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path></svg>
-            <span>Semantic Matching</span>
-          </div>
-          <div class="feature-badge-pill">
-            <span class="badge-dot"></span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DCDDE1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-            <span>Explainable Scoring</span>
-          </div>
+          <button class="hero-btn-primary" onclick="document.getElementById('jdCard').scrollIntoView({behavior:'smooth'})">Start Screening Free</button>
+          <button class="hero-btn-outline" onclick="document.getElementById('howItWorks').scrollIntoView({behavior:'smooth'})">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+            Watch 1-min demo
+          </button>
         </div>
       </div>
 
-      <!-- RIGHT COLUMN: Fanned resume card stack -->
-      <!-- DOM order: card4 (furthest back) first → card1 (front) last -->
+      <!-- RIGHT COLUMN: Card-catalog drawer with fanned resume cards -->
       <div class="hero-right">
         <div class="fan-glow"></div>
-        <div class="fan-stack">
+        <div class="card-catalog">
+          <div class="catalog-guide-tab">CV</div>
 
-          <!-- Card 4 — furthest back, no tab -->
-          <div class="fan-card">
-            <div class="fan-name-line"></div>
-            <div class="fan-text-line w-90"></div>
-            <div class="fan-text-line w-70"></div>
-            <div class="fan-text-line w-55"></div>
-            <div class="fan-text-line w-80"></div>
-            <div class="fan-text-line w-40"></div>
+          <div class="catalog-fan">
+            <div class="catalog-card layer-1"></div>
+            <div class="catalog-card layer-2"></div>
+            <div class="catalog-card layer-3"></div>
+            <div class="catalog-card front">
+              <div class="catalog-card-row">
+                <span class="catalog-card-name">Candidate Match</span>
+                <span class="catalog-card-badge">92%</span>
+              </div>
+              <div class="catalog-card-role">Senior Backend Engineer</div>
+              <div class="catalog-card-divider"></div>
+              <div class="catalog-card-line"><span>Keyword Match</span><span>95%</span></div>
+              <div class="catalog-card-line"><span>Semantic Context</span><span>88%</span></div>
+              <div class="catalog-card-tags">
+                <span class="catalog-tag">✓ Python — exact match</span>
+                <span class="catalog-tag">✓ Distributed systems — implied</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Card 3 — no tab -->
-          <div class="fan-card">
-            <div class="fan-name-line"></div>
-            <div class="fan-text-line w-90"></div>
-            <div class="fan-text-line w-55"></div>
-            <div class="fan-text-line w-70"></div>
-            <div class="fan-text-line w-80"></div>
-            <div class="fan-text-line w-40"></div>
+          <div class="catalog-drawer-box">
+            <div class="catalog-drawer-label">Resumes — R&ndash;Z</div>
           </div>
-
-          <!-- Card 2 — muted tab "82%" -->
-          <div class="fan-card">
-            <div class="fan-tab muted">82%</div>
-            <div class="fan-name-line"></div>
-            <div class="fan-text-line w-90"></div>
-            <div class="fan-text-line w-70"></div>
-            <div class="fan-text-line w-55"></div>
-            <div class="fan-text-line w-80"></div>
-            <div class="fan-text-line w-40"></div>
-          </div>
-
-          <!-- Card 1 — front, gold tab "89%" -->
-          <div class="fan-card">
-            <div class="fan-tab">89%</div>
-            <div class="fan-name-line"></div>
-            <div class="fan-text-line w-90"></div>
-            <div class="fan-text-line w-70"></div>
-            <div class="fan-text-line w-55"></div>
-            <div class="fan-text-line w-80"></div>
-            <div class="fan-text-line w-40"></div>
-          </div>
-
         </div>
       </div>
 
     </div><!-- /hero-grid -->
 
+    <!-- TRUST BAR — feature tags, subtle, below the fold -->
+    <div class="trust-bar">
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Keyword Matching</span>
+      </div>
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path></svg>
+        <span>Semantic Search</span>
+      </div>
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        <span>Explainable AI</span>
+      </div>
+    </div>
+
     <!-- HERO IMAGE CARD (RESUME PEDESTAL SCENE) -->
     <div class="hero-image-card">
-      <!-- // TODO: swap for animated 3D resume scene -->
-      <div class="resume-pedestal-scene">
-        <div class="pedestal-item">
-          <div class="resume-doc-icon">
-            <span class="doc-tag top-score">98%</span>
-            <div class="doc-line medium"></div>
-            <div class="doc-line short"></div>
-            <div class="doc-line long"></div>
+      <!-- UPLOAD CARDS -->
+      <div class="upload-grid">
+        <div class="upload-card" id="jdCard">
+          <div class="upload-card-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><line x1="9.5" y1="12" x2="15.5" y2="12"/><line x1="9.5" y1="15.5" x2="15.5" y2="15.5"/></svg>
+            <span>Job description</span>
           </div>
-          <div class="pedestal-base"></div>
-        </div>
-        <div class="pedestal-item">
-          <div class="resume-doc-icon sapphire">
-            <span class="doc-tag">92%</span>
-            <div class="doc-line long"></div>
-            <div class="doc-line short"></div>
-            <div class="doc-line medium"></div>
-          </div>
-          <div class="pedestal-base"></div>
-        </div>
-        <div class="pedestal-item">
-          <div class="resume-doc-icon">
-            <span class="doc-tag">88%</span>
-            <div class="doc-line short"></div>
-            <div class="doc-line medium"></div>
-            <div class="doc-line short"></div>
-          </div>
-          <div class="pedestal-base"></div>
-        </div>
-        <div class="pedestal-item">
-          <div class="resume-doc-icon sapphire">
-            <span class="doc-tag">85%</span>
-            <div class="doc-line medium"></div>
-            <div class="doc-line long"></div>
-            <div class="doc-line short"></div>
-          </div>
-          <div class="pedestal-base"></div>
-        </div>
-      </div>
 
-      <!-- INTAKE CONTROLS -->
-      <div class="intake-grid">
-        <button class="intake-card" id="jdCard" type="button">
-          <div class="swatch-top">
-            <svg class="swatch-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><line x1="9.5" y1="12" x2="15.5" y2="12"/><line x1="9.5" y1="15.5" x2="15.5" y2="15.5"/></svg>
-            <span class="swatch-code">JD · 01</span>
-          </div>
-          <div class="swatch-label"><strong>Job description</strong><span id="jdStatus">Paste text or upload a file</span></div>
-        </button>
-        <button class="intake-card gold" id="resumeCard" type="button">
-          <div class="swatch-top">
-            <svg class="swatch-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><circle cx="11.5" cy="13" r="2"/><path d="M8.5 18.5c.6-1.8 2-2.7 3-2.7s2.4.9 3 2.7"/></svg>
-            <span class="swatch-code">CV · 02</span>
-          </div>
-          <div class="swatch-label"><strong>Resumes</strong><span id="resumeStatus">Upload PDF or JPG files</span></div>
-        </button>
-      </div>
+          <label class="upload-dropzone" for="jdFileInput">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            <strong>Import Job Description</strong>
+            <span>Drop a file or click here to choose one</span>
+          </label>
+          <input id="jdFileInput" type="file" accept=".pdf,.doc,.docx,.txt" hidden>
 
-      <div class="intake-detail" id="jdDetail">
-        <textarea id="jobDescription" rows="4" placeholder="Paste responsibilities, requirements and preferred skills…"></textarea>
-        <div class="filerow">
-          <label class="filebtn" for="jdFileInput">Or upload a file<input id="jdFileInput" type="file" accept=".pdf,.doc,.docx,.txt"></label>
-          <span class="filestatus" id="jdFileStatus"></span>
+          <div class="upload-file-list" id="jdFileList"></div>
+
+          <textarea id="jobDescription" class="upload-textarea" rows="3" placeholder="…or paste the job description text here"></textarea>
+
+          <button type="button" class="upload-action-btn" onclick="document.getElementById('jdFileInput').click()">Upload File</button>
+          <span class="upload-status-line" id="jdStatus">Paste text or upload a file</span>
         </div>
-      </div>
-      <div class="intake-detail" id="resumeDetail">
-        <div class="filerow">
-          <label class="filebtn" for="fileInput">Choose files<input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg" multiple></label>
-          <span class="filestatus" id="resumeFileStatus">No files selected</span>
+
+        <div class="upload-card" id="resumeCard">
+          <div class="upload-card-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l5 5v13H6z"/><path d="M15 3v5h5"/><circle cx="11.5" cy="13" r="2"/><path d="M8.5 18.5c.6-1.8 2-2.7 3-2.7s2.4.9 3 2.7"/></svg>
+            <span>Resumes</span>
+          </div>
+
+          <label class="upload-dropzone" for="fileInput">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            <strong>Import Resume Files</strong>
+            <span>Drop files or click here to choose (PDF or JPG)</span>
+          </label>
+          <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg" multiple hidden>
+
+          <div class="upload-file-list" id="resumeFileList"></div>
+
+          <button type="button" class="upload-action-btn" onclick="document.getElementById('fileInput').click()">Upload File</button>
+          <span class="upload-status-line" id="resumeStatus">Upload PDF or JPG files</span>
         </div>
       </div>
 
@@ -1289,9 +1365,21 @@ const norm=v=>String(v||"").toLowerCase(),loc=c=>c.location||c.city||"Not specif
 
 /* ---------- Stage 1 behaviour ---------- */
 let resumeFiles=[];
-function toggleDetail(cardId,detailId,otherDetailId){byId(detailId).classList.toggle("open");byId(cardId).classList.toggle("selected",byId(detailId).classList.contains("open"))}
-byId("jdCard").onclick=()=>toggleDetail("jdCard","jdDetail");
-byId("resumeCard").onclick=()=>toggleDetail("resumeCard","resumeDetail");
+
+function formatFileSize(bytes){
+  if(bytes<1024)return bytes+" B";
+  if(bytes<1024*1024)return (bytes/1024).toFixed(0)+" KB";
+  return (bytes/(1024*1024)).toFixed(1)+" MB";
+}
+function fileRowHTML(name,size,onRemoveAttr){
+  return '<div class="upload-file-row">'
+    +'<div class="upload-file-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/></svg></div>'
+    +'<div class="upload-file-meta"><div class="upload-file-name">'+name+'</div>'
+    +'<div class="upload-file-sub"><span>'+size+'</span><span>&middot;</span><span class="done">&check; Completed</span></div></div>'
+    +'<button type="button" class="upload-file-remove" '+onRemoveAttr+' aria-label="Remove file">'
+    +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+    +'</div>';
+}
 
 function jdProvided(){return byId("jobDescription").value.trim().length>0||byId("jdFileInput").files.length>0}
 function refreshStart(){
@@ -1300,10 +1388,17 @@ function refreshStart(){
   byId("startHint").textContent=ready?"Ready to match "+resumeFiles.length+" resume(s) against the listing":"Add a job description and at least one resume to continue";
 }
 byId("jobDescription").oninput=()=>{byId("jdStatus").textContent=byId("jobDescription").value.trim()?byId("jobDescription").value.trim().split(/\s+/).length+" words pasted":"Paste text or upload a file";refreshStart()};
+
+function clearJdFile(){
+  byId("jdFileInput").value="";
+  byId("jdFileList").innerHTML="";
+  byId("jdStatus").textContent=byId("jobDescription").value.trim()?byId("jobDescription").value.trim().split(/\s+/).length+" words pasted":"Paste text or upload a file";
+  refreshStart();
+}
 byId("jdFileInput").onchange=e=>{
   const file=e.target.files[0];
   if(!file)return;
-  byId("jdFileStatus").textContent=file.name+" selected";
+  byId("jdFileList").innerHTML=fileRowHTML(file.name,formatFileSize(file.size),'onclick="clearJdFile()"');
   byId("jdStatus").textContent=file.name;
   if(file.name.toLowerCase().endsWith(".txt")){
     const reader=new FileReader();
@@ -1312,10 +1407,20 @@ byId("jdFileInput").onchange=e=>{
   }
   refreshStart();
 };
-byId("fileInput").onchange=e=>{
-  resumeFiles=[...e.target.files];
-  byId("resumeFileStatus").textContent=resumeFiles.length?resumeFiles.length+" file(s) selected":"No files selected";
+
+function renderResumeFileList(){
+  byId("resumeFileList").innerHTML=resumeFiles.map((f,i)=>fileRowHTML(f.name,formatFileSize(f.size),'onclick="removeResumeFile('+i+')"')).join("");
   byId("resumeStatus").textContent=resumeFiles.length?resumeFiles.length+" resume(s) added":"Upload PDF or JPG files";
+}
+function removeResumeFile(i){
+  resumeFiles.splice(i,1);
+  renderResumeFileList();
+  refreshStart();
+}
+byId("fileInput").onchange=e=>{
+  resumeFiles=[...resumeFiles,...e.target.files];
+  e.target.value="";
+  renderResumeFileList();
   refreshStart();
 };
 byId("runButton").onclick=()=>{
